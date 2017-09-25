@@ -46,6 +46,10 @@ public:
         m_next_report = 0; // next cycle must read this pin immediately
     }
 
+    virtual void setReadingInterval(unsigned long interval) {
+        m_read_interval = interval;
+    }
+
     virtual void setOutput(int output) = 0;
     virtual int readInput() = 0;
 };
