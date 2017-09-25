@@ -1,0 +1,21 @@
+{
+  "name": "VBuffer",
+  "keywords": "verboze serial buffer",
+  "description": "",
+  "repository":
+  {
+    "type": "git",
+    "url": ""
+  },
+  "authors":
+  [
+    {
+      "name": "Hasan Al-Jawaheri",
+      "email": "hasan.aljawaheri@gmail.com",
+      "maintainer": true
+    },
+  ],
+  "version": "1.0.0",
+  "frameworks": "arduino",
+  "platforms": "*"
+}

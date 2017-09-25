@@ -1,0 +1,21 @@
+{
+  "name": "VSerialCommunication",
+  "keywords": "verboze serial communication",
+  "description": "",
+  "repository":
+  {
+    "type": "git",
+    "url": ""
+  },
+  "authors":
+  [
+    {
+      "name": "Hasan Al-Jawaheri",
+      "email": "hasan.aljawaheri@gmail.com",
+      "maintainer": true
+    },
+  ],
+  "version": "1.0.0",
+  "frameworks": "arduino",
+  "platforms": "*"
+}
