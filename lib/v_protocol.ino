@@ -16,6 +16,11 @@
 #define PIN_MODE_OUTPUT 1
 #define PIN_MODE_PWM    2
 
+
+extern DigitalPinState* digital_pins[];
+extern AnalogPinState* analog_pins[];
+extern PinState* virtual_pins[];
+
 class PinState {
 protected:
     char m_index;
@@ -90,7 +95,7 @@ public:
 
     virtual int readInput() {
     }
-}
+};
 
 int on_command(int msg_type, int msg_len, char* command_buffer) {
     if (msg_len < 2)
@@ -100,11 +105,11 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
     int pin_index = (int)command_buffer[1];
 
     PinState* pin;
-    if (pin_type == PIN_TYPE_DIGITAL && pin_index < NUM_DIGITAL_PINS)
+    if (pin_type == PIN_TYPE_DIGITAL && pin_index < sizeof(digital_pins) / sizeof(PinState*))
         pin = digital_pins[pin_index];
-    else if (pin_type == PIN_TYPE_ANALOG && pin_index < NUM_ANALOG_PINS)
+    else if (pin_type == PIN_TYPE_ANALOG && pin_index < sizeof(analog_pins) / sizeof(PinState*))
         pin = analog_pins[pin_index];
-    else if (pin_type == PIN_TYPE_VIRTUAL && pin_index < NUM_VIRTUAL_PINS)
+    else if (pin_type == PIN_TYPE_VIRTUAL && pin_index < sizeof(virtual_pins) / sizeof(PinState*))
         pin = virtual_pins[pin_index];
     else
         return 0;
@@ -113,7 +118,7 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
         case COMMAND_SET_PIN_MODE: {
             if (msg_len != 3)
                 return 0;
-            pin->setMode(command_buffer[2])
+            pin->setMode(command_buffer[2]);
             break;
         }
         case COMMAND_SET_PIN_OUTPUT: {
