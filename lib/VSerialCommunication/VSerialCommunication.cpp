@@ -1,5 +1,3 @@
-#include <Arduino.h>
-#include <HardwareSerial.h>
 #include <VSerialCommunication.h>
 #include <VBuffer.h>
 
@@ -110,7 +108,7 @@ inline void serial_update(unsigned long cur_time) {
     }
 }
 
-void send_serial_command(int type, int len, char* cmd) {
+inline void send_serial_command(int type, int len, char* cmd) {
     SerialRef->write(type);
     SerialRef->write(len);
     for (int i = 0; i < len; i++)
