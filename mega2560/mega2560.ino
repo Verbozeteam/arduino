@@ -4,10 +4,12 @@
 #include <DallasTemperature.h>
 #include <TimerOne.h>
 
+#include <VSerialCommunication.h>
+#include <VPinState.h>
+
 #define NUM_DIGITAL_PINS 54
 #define NUM_ANALOG_PINS 16
 #define NUM_VIRTUAL_PINS 1
-
 
 DigitalPinState* digital_pins[NUM_DIGITAL_PINS];
 AnalogPinState* analog_pins[NUM_ANALOG_PINS];
