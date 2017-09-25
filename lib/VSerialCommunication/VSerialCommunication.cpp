@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <HardwareSerial.h>
 #include <VSerialCommunication.h>
 #include <VBuffer.h>
 
@@ -14,14 +15,17 @@ unsigned long sync_send_timer = 0;
 unsigned long sync_send_period = 1000; // 1 second
 int wait_for_sync = 1;
 
-inline void serial_init() {
-    Serial.begin(9600);
+HardwareSerial* SerialRef = NULL;
+
+inline void serial_init(HardwareSerial* serial) {
+    SerialRef = serial;
+    SerialRef->begin(9600);
 }
 
 inline void serial_update(unsigned long cur_time) {
-    int num_bytes = Serial.available();
+    int num_bytes = SerialRef->available();
     while (num_bytes > 0 && !read_buffer_full()) {
-        read_buffer_append(Serial.read());
+        read_buffer_append(SerialRef->read());
         num_bytes--;
     }
 
@@ -29,7 +33,7 @@ inline void serial_update(unsigned long cur_time) {
         sync_send_timer = cur_time;
         sync_send_timer += sync_send_period;
         for (int i = 0; i < 8; i++)
-            Serial.write(SYNC_SEQUENCE[i]);
+            SerialRef->write(SYNC_SEQUENCE[i]);
     }
 
     if (wait_for_sync) {
@@ -107,9 +111,9 @@ inline void serial_update(unsigned long cur_time) {
 }
 
 void send_serial_command(int type, int len, char* cmd) {
-    Serial.write(type);
-    Serial.write(len);
+    SerialRef->write(type);
+    SerialRef->write(len);
     for (int i = 0; i < len; i++)
-        Serial.write(cmd[i]);
+        SerialRef->write(cmd[i]);
 }
 
