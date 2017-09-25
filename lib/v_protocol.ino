@@ -17,6 +17,7 @@
 #define PIN_MODE_PWM    2
 
 class PinState {
+protected:
     char m_index;
     char m_mode;
     unsigned long m_next_report;
@@ -33,7 +34,7 @@ public:
 
     virtual void setMode(int mode) {
         m_mode = mode;
-        setPinMode(m_index, m_mode);
+        pinMode(m_index, m_mode);
     }
 
     virtual void markForReading() {
