@@ -1,13 +1,13 @@
 #pragma once
 
-inline void read_buffer_append(char b);
+void read_buffer_append(char b);
 
-inline char read_buffer_consume(int len = 1);
+char read_buffer_consume(int len = 1);
 
-inline int read_buffer_full();
+int read_buffer_full();
 
-inline int read_buffer_empty();
+int read_buffer_empty();
 
-inline int read_buffer_size();
+int read_buffer_size();
 
-inline char read_buffer_at(int index);
+char read_buffer_at(int index);
