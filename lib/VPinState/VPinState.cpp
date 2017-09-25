@@ -81,11 +81,11 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
     int pin_index = (int)command_buffer[1];
 
     PinState* pin;
-    if (pin_type == PIN_TYPE_DIGITAL && pin_index < sizeof(digital_pins) / sizeof(PinState*))
+    if (pin_type == PIN_TYPE_DIGITAL && pin_index < num_digital_pins)
         pin = digital_pins[pin_index];
-    else if (pin_type == PIN_TYPE_ANALOG && pin_index < sizeof(analog_pins) / sizeof(PinState*))
+    else if (pin_type == PIN_TYPE_ANALOG && pin_index < num_analog_pins)
         pin = analog_pins[pin_index];
-    else if (pin_type == PIN_TYPE_VIRTUAL && pin_index < sizeof(virtual_pins) / sizeof(PinState*))
+    else if (pin_type == PIN_TYPE_VIRTUAL && pin_index < num_virtual_pins)
         pin = virtual_pins[pin_index];
     else
         return 0;
