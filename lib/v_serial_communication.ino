@@ -93,7 +93,7 @@ inline void serial_update(unsigned long cur_time) {
                 if (!is_valid)
                     wait_for_sync = 1;
             } else {
-                if (!on_command(msg_type, msg_len, command_buffer))
+                if (!on_command(msg_type, msg_len, &command_buffer[0]))
                     wait_for_sync = 1;
             }
         } else
