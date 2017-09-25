@@ -15,12 +15,12 @@ int wait_for_sync = 1;
 
 HardwareSerial* SerialRef = NULL;
 
-inline void serial_init(HardwareSerial* serial) {
+void serial_init(HardwareSerial* serial) {
     SerialRef = serial;
     SerialRef->begin(9600);
 }
 
-inline void serial_update(unsigned long cur_time) {
+void serial_update(unsigned long cur_time) {
     int num_bytes = SerialRef->available();
     while (num_bytes > 0 && !read_buffer_full()) {
         read_buffer_append(SerialRef->read());
@@ -108,7 +108,7 @@ inline void serial_update(unsigned long cur_time) {
     }
 }
 
-inline void send_serial_command(int type, int len, char* cmd) {
+void send_serial_command(int type, int len, char* cmd) {
     SerialRef->write(type);
     SerialRef->write(len);
     for (int i = 0; i < len; i++)
