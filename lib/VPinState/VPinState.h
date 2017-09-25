@@ -17,6 +17,9 @@
 #define PIN_MODE_OUTPUT 1
 #define PIN_MODE_PWM    2
 
+
+inline void init_pin_states(int num_digital, int num_analog, int num_virtual);
+
 class PinState {
 protected:
     char m_index;

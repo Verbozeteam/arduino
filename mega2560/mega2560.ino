@@ -24,6 +24,7 @@ void setup() {
     virtual_pins[0] = new CentralACPinState();
 
     serial_init(&Serial);
+    init_pin_states(NUM_DIGITAL_PINS, NUM_ANALOG_PINS, NUM_VIRTUAL_PINS);
 }
 
 void loop() {

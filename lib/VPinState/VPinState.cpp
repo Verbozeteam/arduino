@@ -1,4 +1,19 @@
 #include <VPinState.h>
+#include <Arduino.h>
+
+extern DigitalPinState* digital_pins[];
+extern AnalogPinState* analog_pins[];
+extern PinState* virtual_pins[];
+
+int num_digital_pins = 0;
+int num_analog_pins = 0;
+int num_virtual_pins = 0;
+
+inline void init_pin_states(int num_digital, int num_analog, int num_virtual) {
+    num_digital_pins = num_digital;
+    num_analog_pins = num_analog;
+    num_virtual_pins = num_virtual;
+}
 
 PinState::PinState(int index, int mode) : m_index(index), m_mode(mode) {
     pinMode(index, mode);
