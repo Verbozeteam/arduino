@@ -1,9 +1,10 @@
+#pragma once
 
 // Messages sent by the Arduino
 #define COMMAND_PIN_READING             0
 
 // Messages received by the Ardunio
-#define COMMAND_SET_PIN_MODE           1
+#define COMMAND_SET_PIN_MODE            1
 #define COMMAND_SET_PIN_OUTPUT          2
 #define COMMAND_READ_PIN_INPUT          3
 #define COMMAND_REGISTER_PIN_LISTENER   4
@@ -15,11 +16,6 @@
 #define PIN_MODE_INPUT  0
 #define PIN_MODE_OUTPUT 1
 #define PIN_MODE_PWM    2
-
-
-extern DigitalPinState* digital_pins[];
-extern AnalogPinState* analog_pins[];
-extern PinState* virtual_pins[];
 
 class PinState {
 protected:
