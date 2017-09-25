@@ -1,3 +1,5 @@
+#include <VSerialCommunication.h>
+#include <VBuffer.h>
 
 #define MAX_COMMAND_SIZE 128
 
