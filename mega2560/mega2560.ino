@@ -23,7 +23,7 @@ void setup() {
 
     virtual_pins[0] = new CentralACPinState();
 
-    serial_init();
+    serial_init(&Serial);
 }
 
 void loop() {
