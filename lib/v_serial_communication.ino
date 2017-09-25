@@ -25,7 +25,8 @@ inline void serial_update(unsigned long cur_time) {
     if (cur_time >= sync_send_timer) {
         sync_send_timer = cur_time;
         sync_send_timer += sync_send_period;
-        Serial.write((char*)&SYNC_SEQUENCE[0], 8);
+        for (int i = 0; i < 8; i++)
+            Serial.write(SYNC_SEQUENCE[i]);
     }
 
     if (wait_for_sync) {
@@ -105,7 +106,8 @@ inline void serial_update(unsigned long cur_time) {
 void send_serial_command(int type, int len, char* cmd) {
     Serial.write(type);
     Serial.write(len);
-    Serial.write(cmd, len);
+    for (int i = 0; i < len; i++)
+        Serial.write(cmd[i]);
 }
 
 
