@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <VSerialCommunication.h>
 #include <VBuffer.h>
 
