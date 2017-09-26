@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 
 // Messages sent by the Arduino
 #define COMMAND_PIN_READING             0
