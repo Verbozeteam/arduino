@@ -121,17 +121,17 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
         case COMMAND_REGISTER_PIN_LISTENER: {
             if (msg_len != 6)
                 return 0;
-            unsigned long byte1 = (unsigned long)command_buffer[2];
-            unsigned long byte2 = (unsigned long)command_buffer[3];
-            unsigned long byte3 = (unsigned long)command_buffer[4];
-            unsigned long byte4 = (unsigned long)command_buffer[5];
+            unsigned long byte1 = (unsigned long)command_buffer[2] & 0xFF;
+            unsigned long byte2 = (unsigned long)command_buffer[3] & 0xFF;
+            unsigned long byte3 = (unsigned long)command_buffer[4] & 0xFF;
+            unsigned long byte4 = (unsigned long)command_buffer[5] & 0xFF;
             byte2 >>= 8;
             byte3 >>= 16;
             byte4 >>= 24;
             byte1 |= byte2;
             byte1 |= byte3;
             byte1 |= byte4;
-            pin->setReadingInterval(255);
+            pin->setReadingInterval(byte1);
             break;
         }
         default:
