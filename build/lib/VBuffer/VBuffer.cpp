@@ -1,3 +1,4 @@
+#include <VBuffer.h>
 
 #define BUFFER_SIZE 4096
 

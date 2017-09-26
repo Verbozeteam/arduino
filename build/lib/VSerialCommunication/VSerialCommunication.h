@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Arduino.h>
 #include <HardwareSerial.h>
 
 void serial_init(HardwareSerial* serial);

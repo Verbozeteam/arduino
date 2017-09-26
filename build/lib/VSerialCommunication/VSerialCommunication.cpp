@@ -59,28 +59,13 @@ void serial_update(unsigned long cur_time) {
                 }
             }
 
-            // for(sync_start = read_buffer_start; (sync_start + SYNC_SEQUENCE_LEN) % BUFFER_SIZE != read_buffer_end; sync_start = (sync_start + 1) % BUFFER_SIZE) {
-            //     int is_sync_start = 1;
-            //     for (int i = 0; i < SYNC_SEQUENCE_LEN; i++) {
-            //         if (read_buffer[sync_start+i] != SYNC_SEQUENCE[i]) {
-            //             is_sync_start = 0;
-            //             break;
-            //         }
-            //     }
-            //     if (is_sync_start) {
-            //         found_sync = 1;
-            //         break;
-            //     }
-            // }
             if (found_sync) {
                 wait_for_sync = 0;
                 sync_send_period = 10000;
                 read_buffer_consume(sync_start+SYNC_SEQUENCE_LEN);
-                //read_buffer_start = (sync_start + SYNC_SEQUENCE_LEN) % BUFFER_SIZE;
             } else {
                 int truncate_size = read_buffer_size() - SYNC_SEQUENCE_LEN;
                 read_buffer_consume(truncate_size);
-                //read_buffer_start = (read_buffer_start + truncate_size) % BUFFER_SIZE;
             }
         }
     }
