@@ -26,7 +26,10 @@ PinState::PinState(int index, int mode, int type) : m_index(index), m_mode(mode)
 
 void PinState::update(unsigned long cur_time) {
     if (m_mode == PIN_MODE_INPUT && cur_time >= m_next_report) {
-        m_next_report = cur_time + m_read_interval;
+        if (m_read_interval == -1)
+            m_next_report = -1;
+        else
+            m_next_report = cur_time + m_read_interval;
         int reading = readInput();
         char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
         send_serial_command(COMMAND_PIN_READING, 3, cmd);
