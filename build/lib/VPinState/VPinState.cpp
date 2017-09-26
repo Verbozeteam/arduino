@@ -125,9 +125,9 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
             unsigned long byte2 = (unsigned long)command_buffer[3] & 0xFF;
             unsigned long byte3 = (unsigned long)command_buffer[4] & 0xFF;
             unsigned long byte4 = (unsigned long)command_buffer[5] & 0xFF;
-            byte2 >>= 8;
-            byte3 >>= 16;
-            byte4 >>= 24;
+            byte2 <<= 8;
+            byte3 <<= 16;
+            byte4 <<= 24;
             byte1 |= byte2;
             byte1 |= byte3;
             byte1 |= byte4;
