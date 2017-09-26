@@ -4,15 +4,7 @@ if [ "$#" -ne 1 ] || ! [ -d "$1" ]; then
 fi
 
 rm -rf build/src/*
-touch build/src/sketch.ino
-
-for f in lib/*
-do
-  cat $f >> build/src/sketch.ino
-  printf '\n' >> build/src/sketch.ino
-done
-
-cat $1/$1.ino >> build/src/sketch.ino
+cp $1/$1.ino build/src/
 
 cd build/
 ino build -m $1
