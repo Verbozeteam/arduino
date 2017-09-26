@@ -131,7 +131,7 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
             byte1 |= byte2;
             byte1 |= byte3;
             byte1 |= byte4;
-            pin->setReadingInterval(byte1);
+            pin->setReadingInterval(255);
             break;
         }
         default:
