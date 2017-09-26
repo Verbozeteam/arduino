@@ -18,23 +18,26 @@
 #define PIN_MODE_PWM    2
 
 
-void init_pin_states(int num_digital, int num_analog, int num_virtual);
-
 class PinState {
-protected:
+public: // Fuck it.
     char m_index;
     char m_mode;
+    char m_type;
     unsigned long m_next_report;
     unsigned long m_read_interval; // interval (in ms) at which readings should happen
 
 public:
-    PinState(int index = 0, int mode = PIN_MODE_OUTPUT);
+    PinState(int index = 0, int mode = PIN_MODE_OUTPUT, int type = PIN_TYPE_DIGITAL);
+
+    virtual void update(unsigned long cur_time);
 
     virtual void setMode(int mode);
 
     virtual void markForReading();
 
     virtual void setReadingInterval(unsigned long interval);
+
+    virtual int getReading(unsigned long cur_time, int* reading);
 
     virtual void setOutput(int output) = 0;
 
@@ -69,4 +72,6 @@ public:
     virtual int readInput();
 };
 
+void init_pin_states(int num_digital, int num_analog, int num_virtual);
 int on_command(int msg_type, int msg_len, char* command_buffer);
+void pin_states_update(unsigned long cur_time);

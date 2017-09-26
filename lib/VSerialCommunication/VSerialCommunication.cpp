@@ -20,6 +20,10 @@ void serial_init(HardwareSerial* serial) {
     SerialRef->begin(9600);
 }
 
+int serial_is_synced() {
+    return wait_for_sync == 0;
+}
+
 void serial_update(unsigned long cur_time) {
     int num_bytes = SerialRef->available();
     while (num_bytes > 0 && !read_buffer_full()) {

@@ -31,6 +31,7 @@ void loop() {
     unsigned long cur_time = millis();
 
     serial_update(cur_time);
+    pin_states_update(cur_time);
 }
 
 

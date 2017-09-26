@@ -1,4 +1,5 @@
 #include <VPinState.h>
+#include <VSerialCommunication.h>
 #include <Arduino.h>
 
 extern DigitalPinState* digital_pins[];
@@ -15,12 +16,21 @@ void init_pin_states(int num_digital, int num_analog, int num_virtual) {
     num_virtual_pins = num_virtual;
 }
 
-PinState::PinState(int index, int mode) : m_index(index), m_mode(mode) {
+PinState::PinState(int index, int mode, int type) : m_index(index), m_mode(mode), m_type(type) {
     pinMode(index, mode);
     if (mode == 1)
         digitalWrite(index, mode);
     m_next_report = 0;
     m_read_interval = -1;
+}
+
+void PinState::update(unsigned long cur_time) {
+    if (m_mode == PIN_MODE_INPUT && cur_time >= m_next_report) {
+        m_next_report = cur_time + m_read_interval;
+        int reading = readInput();
+        char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
+        send_serial_command(COMMAND_PIN_READING, 3, cmd);
+    }
 }
 
 void PinState::setMode(int mode) {
@@ -36,7 +46,7 @@ void PinState::setReadingInterval(unsigned long interval) {
     m_read_interval = interval;
 }
 
-DigitalPinState::DigitalPinState(int index, int mode) : PinState(index, mode) {
+DigitalPinState::DigitalPinState(int index, int mode) : PinState(index, mode, PIN_TYPE_DIGITAL) {
 }
 
 void DigitalPinState::setOutput(int output) {
@@ -47,23 +57,19 @@ void DigitalPinState::setOutput(int output) {
 }
 
 int DigitalPinState::readInput() {
-    if (m_mode == PIN_MODE_INPUT)
-        return digitalRead(m_index);
-    return 0;
+    return digitalRead(m_index);
 }
 
-AnalogPinState::AnalogPinState(int index, int mode) : PinState(index, mode) {
+AnalogPinState::AnalogPinState(int index, int mode) : PinState(index, mode, PIN_TYPE_ANALOG) {
 }
 
 void AnalogPinState::setOutput(int output) {}
 
 int AnalogPinState::readInput() {
-    if (m_mode == PIN_MODE_INPUT)
-        return analogRead(m_index);
-    return 0;
+    return analogRead(m_index);
 }
 
-CentralACPinState::CentralACPinState() : PinState() {
+CentralACPinState::CentralACPinState() : PinState(0, 0, PIN_TYPE_VIRTUAL) {
 
 }
 
@@ -130,4 +136,15 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
     }
 
     return 1;
+}
+
+void pin_states_update(unsigned long cur_time) {
+    if (serial_is_synced()) {
+        for (int i = 0; i < num_digital_pins; i++)
+            digital_pins[i]->update(cur_time);
+        for (int i = 0; i < num_analog_pins; i++)
+            analog_pins[i]->update(cur_time);
+        for (int i = 0; i < num_virtual_pins; i++)
+            virtual_pins[i]->update(cur_time);
+    }
 }
