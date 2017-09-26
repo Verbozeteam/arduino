@@ -37,8 +37,6 @@ public:
 
     virtual void setReadingInterval(unsigned long interval);
 
-    virtual int getReading(unsigned long cur_time, int* reading);
-
     virtual void setOutput(int output) = 0;
 
     virtual int readInput() = 0;
