@@ -4,7 +4,7 @@
 #include <DallasTemperature.h>
 #include <TimerOne.h>
 
-#include <VSerialCommunication.h>
+#include <VCommunication.h>
 #include <VPinState.h>
 
 #define NUM_DIGITAL_PINS 54
