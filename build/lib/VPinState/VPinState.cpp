@@ -116,9 +116,9 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
                 return 0;
             if (!pin) {
                 if (pin_type == PIN_TYPE_DIGITAL) {
-                    pin = digital_pins[pin_index] = new DigitalPinState(m_index, command_buffer[2]);
+                    pin = digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
                 } else if (pin_type == PIN_TYPE_ANALOG) {
-                    pin = analog_pins[pin_index] = new AnalogPinState(m_index, command_buffer[2]);
+                    pin = analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
                 } else
                     return 0;
             } else
