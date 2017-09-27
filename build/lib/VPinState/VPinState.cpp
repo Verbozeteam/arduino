@@ -13,8 +13,6 @@ int num_virtual_pins = 0;
 
 PinState::PinState(int index, int mode, int type) : m_index(index), m_mode(mode), m_type(type) {
     pinMode(index, mode);
-    if (mode == 1)
-        digitalWrite(index, mode);
     m_next_report = 0;
     m_read_interval = -1;
 }
