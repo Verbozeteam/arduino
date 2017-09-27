@@ -21,7 +21,7 @@ class TemperatureEngine {
     static int m_num_sensors;
     static float m_cur_temp;
     static unsigned long m_next_read;
-    static const float fACHomeostasis;
+    static const float fHomeostasis;
 
     static void discoverOneWireDevices();
 
