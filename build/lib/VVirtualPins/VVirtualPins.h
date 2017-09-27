@@ -7,14 +7,14 @@
 #include <DallasTemperature.h>
 #include <TimerOne.h>
 
-PinState* create_virtual_pin(int type, int data_len, char* data);
+PinState* create_virtual_pin(byte type, byte data_len, char* data);
 
 class TemperatureEngine {
     friend class CentralACPinState;
 
     static OneWire m_one_wire;
     static DallasTemperature m_sensors;
-    static int m_num_sensors;
+    static byte m_num_sensors;
     static float m_cur_temp;
     static unsigned long m_next_read;
 
@@ -22,7 +22,7 @@ class TemperatureEngine {
 
 public:
 
-    static void initialize(int one_wire_pin);
+    static void initialize(byte one_wire_pin);
 
     static void update(unsigned long cur_time);
 };
@@ -32,9 +32,9 @@ public:
  */
 class CentralACPinState : public PinState {
 public:
-    CentralACPinState(int temp_index);
+    CentralACPinState(byte temp_index);
 
-    virtual void setOutput(int output);
+    virtual void setOutput(byte output);
 
-    virtual int readInput();
+    virtual byte readInput();
 };

@@ -7,11 +7,11 @@ extern DigitalPinState* digital_pins[];
 extern AnalogPinState* analog_pins[];
 extern PinState* virtual_pins[];
 
-int num_digital_pins = 0;
-int num_analog_pins = 0;
-int num_virtual_pins = 0;
+byte num_digital_pins = 0;
+byte num_analog_pins = 0;
+byte num_virtual_pins = 0;
 
-PinState::PinState(int index, int mode, int type) : m_index(index), m_mode(mode), m_type(type) {
+PinState::PinState(byte index, byte mode, byte type) : m_index(index), m_mode(mode), m_type(type) {
     pinMode(index, mode);
     m_next_report = 0;
     m_read_interval = -1;
@@ -23,13 +23,13 @@ void PinState::update(unsigned long cur_time) {
             m_next_report = -1;
         else
             m_next_report = cur_time + m_read_interval;
-        int reading = readInput();
+        byte reading = readInput();
         char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
         send_serial_command(COMMAND_PIN_READING, 3, cmd);
     }
 }
 
-void PinState::setMode(int mode) {
+void PinState::setMode(byte mode) {
     m_mode = mode;
     pinMode(m_index, m_mode);
 }
@@ -42,44 +42,44 @@ void PinState::setReadingInterval(unsigned long interval) {
     m_read_interval = interval;
 }
 
-DigitalPinState::DigitalPinState(int index, int mode) : PinState(index, mode, PIN_TYPE_DIGITAL) {
+DigitalPinState::DigitalPinState(byte index, byte mode) : PinState(index, mode, PIN_TYPE_DIGITAL) {
 }
 
-void DigitalPinState::setOutput(int output) {
+void DigitalPinState::setOutput(byte output) {
     if (m_mode == PIN_MODE_OUTPUT)
         digitalWrite(m_index, output);
     else if (m_mode == PIN_MODE_PWM)
         analogWrite(m_index, output);
 }
 
-int DigitalPinState::readInput() {
+byte DigitalPinState::readInput() {
     return digitalRead(m_index);
 }
 
-AnalogPinState::AnalogPinState(int index, int mode) : PinState(index, mode, PIN_TYPE_ANALOG) {
+AnalogPinState::AnalogPinState(byte index, byte mode) : PinState(index, mode, PIN_TYPE_ANALOG) {
 }
 
-void AnalogPinState::setOutput(int output) {
+void AnalogPinState::setOutput(byte output) {
 }
 
-int AnalogPinState::readInput() {
+byte AnalogPinState::readInput() {
     return analogRead(m_index);
 }
 
 void reset_board() {
-    for (int i = 0; i < num_digital_pins; i++) {
+    for (byte i = 0; i < num_digital_pins; i++) {
         if (digital_pins[i]) {
             delete digital_pins[i];
             digital_pins[i] = NULL;
         }
     }
-    for (int i = 0; i < num_analog_pins; i++) {
+    for (byte i = 0; i < num_analog_pins; i++) {
         if (analog_pins[i]) {
             delete analog_pins[i];
             analog_pins[i] = NULL;
         }
     }
-    for (int i = 0; i < num_virtual_pins; i++) {
+    for (byte i = 0; i < num_virtual_pins; i++) {
         if (virtual_pins[i]) {
             delete virtual_pins[i];
             virtual_pins[i] = NULL;
@@ -87,13 +87,13 @@ void reset_board() {
     }
 }
 
-void init_pin_states(int num_digital, int num_analog, int num_virtual) {
+void init_pin_states(byte num_digital, byte num_analog, byte num_virtual) {
     num_digital_pins = num_digital;
     num_analog_pins = num_analog;
     num_virtual_pins = num_virtual;
 }
 
-int on_command(int msg_type, int msg_len, char* command_buffer) {
+byte on_command(byte msg_type, byte msg_len, char* command_buffer) {
     if (msg_type == COMMAND_RESET_BOARD) {
         reset_board();
         return 1;
@@ -102,8 +102,8 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
     if (msg_len < 2)
         return 0;
 
-    int pin_type = (int)command_buffer[0] & 0xFF;
-    int pin_index = (int)command_buffer[1] & 0xFF;
+    byte pin_type = command_buffer[0];
+    byte pin_index = command_buffer[1];
 
     PinState* pin;
     if (pin_type == PIN_TYPE_DIGITAL && pin_index < num_digital_pins) {
@@ -121,13 +121,13 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
                 return 0;
             if (!pin) {
                 if (pin_type == PIN_TYPE_DIGITAL) {
-                    pin = digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2] & 0xFF);
+                    pin = digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
                 } else if (pin_type == PIN_TYPE_ANALOG) {
-                    pin = analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2] & 0xff);
+                    pin = analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
                 } else
                     return 0;
             } else
-                pin->setMode(command_buffer[2] & 0xFF);
+                pin->setMode(command_buffer[2]);
             break;
         }
         case COMMAND_SET_VIRTUAL_PIN_MODE: {
@@ -137,7 +137,7 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
             if (pin)
                 delete pin;
 
-            pin = virtual_pins[pin_index] = create_virtual_pin(command_buffer[2] & 0xFF, msg_len-3, &command_buffer[3]);
+            pin = virtual_pins[pin_index] = create_virtual_pin(command_buffer[2], msg_len-3, &command_buffer[3]);
             if (!pin)
                 return 0;
 
@@ -146,7 +146,7 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
         case COMMAND_SET_PIN_OUTPUT: {
             if (msg_len != 3)
                 return 0;
-            pin->setOutput(command_buffer[2] & 0xFF);
+            pin->setOutput(command_buffer[2]);
             break;
         }
         case COMMAND_READ_PIN_INPUT: {

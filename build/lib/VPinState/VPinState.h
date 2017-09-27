@@ -27,46 +27,46 @@
 
 class PinState {
 protected:
-    char m_index;
-    char m_mode;
-    char m_type;
+    byte m_index;
+    byte m_mode;
+    byte m_type;
     unsigned long m_next_report;
     unsigned long m_read_interval; // interval (in ms) at which readings should happen
 
 public:
-    PinState(int index = 0, int mode = PIN_MODE_OUTPUT, int type = PIN_TYPE_DIGITAL);
+    PinState(byte index = 0, byte mode = PIN_MODE_OUTPUT, byte type = PIN_TYPE_DIGITAL);
 
     virtual void update(unsigned long cur_time);
 
-    virtual void setMode(int mode);
+    virtual void setMode(byte mode);
 
     virtual void markForReading();
 
     virtual void setReadingInterval(unsigned long interval);
 
-    virtual void setOutput(int output) = 0;
+    virtual void setOutput(byte output) = 0;
 
-    virtual int readInput() = 0;
+    virtual byte readInput() = 0;
 };
 
 class DigitalPinState : public PinState {
 public:
-    DigitalPinState(int index = 0, int mode = PIN_MODE_OUTPUT);
+    DigitalPinState(byte index = 0, byte mode = PIN_MODE_OUTPUT);
 
-    virtual void setOutput(int output);
+    virtual void setOutput(byte output);
 
-    virtual int readInput();
+    virtual byte readInput();
 };
 
 class AnalogPinState : public PinState {
 public:
-    AnalogPinState(int index = 0, int mode = PIN_MODE_INPUT);
+    AnalogPinState(byte index = 0, byte mode = PIN_MODE_INPUT);
 
-    virtual void setOutput(int output);
+    virtual void setOutput(byte output);
 
-    virtual int readInput();
+    virtual byte readInput();
 };
 
-void init_pin_states(int num_digital, int num_analog, int num_virtual);
-int on_command(int msg_type, int msg_len, char* command_buffer);
+void init_pin_states(byte num_digital, byte num_analog, byte num_virtual);
+byte on_command(byte msg_type, byte msg_len, char* command_buffer);
 void pin_states_update(unsigned long cur_time);
