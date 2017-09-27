@@ -56,6 +56,6 @@ void CentralACPinState::setOutput(int output) {
 }
 
 int CentralACPinState::readInput() {
-    m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(m_index);
+    float m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(m_index);
     return (int)(m_cur_temp*2.0f);
 }
