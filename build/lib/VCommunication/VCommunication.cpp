@@ -98,10 +98,8 @@ void serial_update(unsigned long cur_time) {
                 else if (command_buffer[0] == GOOD_SYNC_SEQUENCE[2])
                     fully_synced = 1;
             } else {
-                if (!on_command(msg_type, msg_len, &command_buffer[0])) {
-                    while (1) {}
+                if (!on_command(msg_type, msg_len, &command_buffer[0]))
                     wait_for_sync = 1;
-                }
             }
         } else
             break;
