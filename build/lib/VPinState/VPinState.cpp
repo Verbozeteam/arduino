@@ -11,6 +11,15 @@ int num_digital_pins = 0;
 int num_analog_pins = 0;
 int num_virtual_pins = 0;
 
+
+OneWire TemperatureEngine::m_one_wire(0);
+DallasTemperature TemperatureEngine::m_sensors;
+int TemperatureEngine::m_num_sensors;
+float TemperatureEngine::m_cur_temp;
+unsigned long TemperatureEngine::m_next_read;
+const float TemperatureEngine::fHomeostasis = 0.49f;
+
+
 PinState::PinState(int index, int mode, int type) : m_index(index), m_mode(mode), m_type(type) {
     pinMode(index, mode);
     if (mode == 1)
@@ -187,3 +196,74 @@ void pin_states_update(unsigned long cur_time) {
                 virtual_pins[i]->update(cur_time);
     }
 }
+
+
+PinState* create_virtual_pin(int type, int data_len, char* data) {
+    switch (type) {
+        case 0: {
+            if (data_len != 2)
+                return NULL;
+            return new CentralACPinState(data[0], data[1]);
+        }
+        case 1: {
+            return NULL;
+        }
+    }
+
+    return NULL;
+}
+
+void TemperatureEngine::initialize(int one_wire_pin) {
+    m_one_wire = OneWire(one_wire_pin);
+    m_sensors = DallasTemperature(&m_one_wire);
+    m_sensors.begin();
+    discoverOneWireDevices();
+    m_cur_temp = 25.0f;
+    m_next_read = 0;
+}
+
+void TemperatureEngine::discoverOneWireDevices() {
+    m_num_sensors = 0;
+    byte addr[8];
+    while (m_one_wire.search(addr))
+        m_num_sensors++;
+    m_one_wire.reset_search();
+}
+
+void TemperatureEngine::update(unsigned long cur_time) {
+    if (cur_time >= m_next_read) {
+        m_next_read = cur_time + TEMPERATURE_READ_INTERVAL;
+        m_sensors.requestTemperatures(); // Send the command to get temperatures
+    }
+}
+
+
+CentralACPinState::CentralACPinState(int valve_pin, int temp_index)
+    : PinState(temp_index, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL),
+      m_cur_temp(25.0f),
+      m_target_temp(25.0f),
+      m_airflow(0.0f),
+      m_valve_pin(valve_pin)
+{
+    pinMode(valve_pin, OUTPUT);
+}
+
+void CentralACPinState::update(unsigned long cur_time) {
+    PinState::update(cur_time);
+
+    float diff = m_cur_temp - m_target_temp;
+    float coeff = (min(max(diff, -10), 10)) / 10; // [-1, 1]
+    m_airflow = min(max(m_airflow + TemperatureEngine::fHomeostasis * coeff, 0), 255);
+    analogWrite(m_valve_pin, (int)m_airflow);
+}
+
+void CentralACPinState::setOutput(int output) {
+    m_target_temp = ((float)output) / 2.0f;
+}
+
+int CentralACPinState::readInput() {
+    m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(m_index);
+    return (int)(m_cur_temp*2.0f);
+}
+
+
