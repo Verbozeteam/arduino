@@ -56,7 +56,7 @@ void serial_update(unsigned long cur_time) {
             for (sync_start = 0; sync_start + SYNC_SEQUENCE_LEN < rb_size; sync_start++) {
                 int is_sync_sequence_start = 1;
                 for (int i = 0; i < SYNC_SEQUENCE_LEN; i++) {
-                    if (read_buffer_at(sync_start+i) != SYNC_SEQUENCE[i]) {
+                    if (read_buffer_at(sync_start+i) != SYNC_SEQUENCE[i] && read_buffer_at(sync_start+i) != GOOD_SYNC_SEQUENCE[i]) {
                         is_sync_sequence_start = 0;
                         break;
                     }
