@@ -26,17 +26,17 @@ All communication happens by sending messages in the following format: `[code (1
         - temp_index: Index of the temperature sensor on the OneWire bus
     - 1: ISR Light controller
 
-### Code 3: Set pin output `[2][3][pin_type][pin_index][output]`
+### Code 3: Set pin output `[3][3][pin_type][pin_index][output]`
 - pin_type: 0 for digital pin, 1 for analog pin, 2 for virtual pin
 - pin_index: Index of the pin
 - output: output value (0/1 for digital, or 0-255 for PWM)
 
-### Code 4: Read pin input `[3][2][pin_type][pin_index]`
+### Code 4: Read pin input `[4][2][pin_type][pin_index]`
 The reading will be returned via a message (code 0) sent by the arduino
 - pin_type: 0 for digital pin, 1 for analog pin, 2 for virtual pin
 - pin_index: Index of the pin
 
-### Code 5: Register pin listener `[4][6][pin_type][pin_index][interval (4 bytes UNSIGNED LITTLE ENDIAN)]`
+### Code 5: Register pin listener `[5][6][pin_type][pin_index][interval (4 bytes UNSIGNED LITTLE ENDIAN)]`
 Makes the Arduino report the pin's reading every interval
 - pin_type: 0 for digital pin, 1 for analog pin, 2 for virtual pin
 - pin_index: Index of the pin

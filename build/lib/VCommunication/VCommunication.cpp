@@ -5,6 +5,7 @@
 
 extern int on_command(int msg_type, int msg_len, char* command_buffer);
 
+char GOOD_SYNC_SEQUENCE[8] = {(char)254, (char)6, (char)253, (char)11, (char)76, (char)250, (char)250, (char)255};
 char SYNC_SEQUENCE[8] = {(char)254, (char)6, (char)252, (char)11, (char)76, (char)250, (char)250, (char)255};
 const int SYNC_SEQUENCE_LEN = sizeof(SYNC_SEQUENCE) / sizeof(char);
 char command_buffer[MAX_COMMAND_SIZE];
@@ -12,6 +13,7 @@ char command_buffer[MAX_COMMAND_SIZE];
 unsigned long sync_send_timer = 0;
 unsigned long sync_send_period = 1000; // 1 second
 int wait_for_sync = 1;
+int fully_synced = 0;
 
 HardwareSerial* SerialRef = NULL;
 
@@ -21,7 +23,7 @@ void serial_init(HardwareSerial* serial) {
 }
 
 int serial_is_synced() {
-    return wait_for_sync == 0;
+    return fully_synced == 1;
 }
 
 void serial_update(unsigned long cur_time) {
@@ -39,6 +41,7 @@ void serial_update(unsigned long cur_time) {
     }
 
     if (wait_for_sync) {
+        fully_synced = 0;
         sync_send_period = 1000;
         // look for a sync sequence
         int rb_size = read_buffer_size();
@@ -83,10 +86,12 @@ void serial_update(unsigned long cur_time) {
             if (msg_type == SYNC_SEQUENCE[0]) {
                 int is_valid = msg_len == SYNC_SEQUENCE[1] ? 1 : 0;
                 for (int i = 2; i < SYNC_SEQUENCE_LEN && is_valid; i++)
-                    if (command_buffer[i-2] != SYNC_SEQUENCE[i])
+                    if (command_buffer[i-2] != SYNC_SEQUENCE[i] && command_buffer[i-2] != GOOD_SYNC_SEQUENCE[i])
                         is_valid = 0;
                 if (!is_valid)
                     wait_for_sync = 1;
+                else if (command_buffer[0] == GOOD_SYNC_SEQUENCE[2])
+                    fully_synced = 1;
             } else {
                 if (!on_command(msg_type, msg_len, &command_buffer[0]))
                     wait_for_sync = 1;
