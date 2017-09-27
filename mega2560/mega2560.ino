@@ -1,29 +1,21 @@
-
-#include <SPI.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#include <TimerOne.h>
-
 #include <VCommunication.h>
 #include <VPinState.h>
+#include <VVirtualPins.h>
 
-#define NUM_DIGITAL_PINS 54
+#define NUM_DIGITAL_PINS 53
 #define NUM_ANALOG_PINS 16
-#define NUM_VIRTUAL_PINS 1
+#define NUM_VIRTUAL_PINS 8
+#define ONE_WIRE_PIN 53
 
-DigitalPinState* digital_pins[NUM_DIGITAL_PINS];
-AnalogPinState* analog_pins[NUM_ANALOG_PINS];
-PinState* virtual_pins[NUM_VIRTUAL_PINS];
+DigitalPinState* digital_pins[NUM_DIGITAL_PINS] = { NULL };
+AnalogPinState* analog_pins[NUM_ANALOG_PINS] = { NULL };
+PinState* virtual_pins[NUM_VIRTUAL_PINS] = { NULL };
 
 void setup() {
-    for (int i = 0; i < NUM_DIGITAL_PINS; i++)
-        digital_pins[i] = new DigitalPinState(i);
-    for (int i = 0; i < NUM_ANALOG_PINS; i++)
-        analog_pins[i] = new AnalogPinState(i);
-
-    virtual_pins[0] = new CentralACPinState();
-
     serial_init(&Serial);
+
+    TemperatureEngine::initialize(ONE_WIRE_PIN);
+
     init_pin_states(NUM_DIGITAL_PINS, NUM_ANALOG_PINS, NUM_VIRTUAL_PINS);
 }
 
@@ -31,6 +23,9 @@ void loop() {
     unsigned long cur_time = millis();
 
     serial_update(cur_time);
+
+    TemperatureEngine::update(cur_time);
+
     pin_states_update(cur_time);
 }
 

@@ -5,9 +5,11 @@
 
 // Messages received by the Ardunio
 #define COMMAND_SET_PIN_MODE            1
-#define COMMAND_SET_PIN_OUTPUT          2
-#define COMMAND_READ_PIN_INPUT          3
-#define COMMAND_REGISTER_PIN_LISTENER   4
+#define COMMAND_SET_VIRTUAL_PIN_MODE    2
+#define COMMAND_SET_PIN_OUTPUT          3
+#define COMMAND_READ_PIN_INPUT          4
+#define COMMAND_REGISTER_PIN_LISTENER   5
+#define COMMAND_RESET_BOARD             6
 
 #define PIN_TYPE_DIGITAL    0
 #define PIN_TYPE_ANALOG     1
@@ -19,7 +21,7 @@
 
 
 class PinState {
-public: // Fuck it.
+protected:
     char m_index;
     char m_mode;
     char m_type;
@@ -54,16 +56,6 @@ public:
 class AnalogPinState : public PinState {
 public:
     AnalogPinState(int index = 0, int mode = PIN_MODE_INPUT);
-
-    virtual void setOutput(int output);
-
-    virtual int readInput();
-};
-
-// virtual pin
-class CentralACPinState : public PinState {
-public:
-    CentralACPinState();
 
     virtual void setOutput(int output);
 
