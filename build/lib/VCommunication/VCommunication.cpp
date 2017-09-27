@@ -36,8 +36,13 @@ void serial_update(unsigned long cur_time) {
     if (cur_time >= sync_send_timer) {
         sync_send_timer = cur_time;
         sync_send_timer += sync_send_period;
-        for (int i = 0; i < 8; i++)
-            SerialRef->write(SYNC_SEQUENCE[i]);
+        if (wait_for_sync) {
+            for (int i = 0; i < 8; i++)
+                SerialRef->write(SYNC_SEQUENCE[i]);
+        } else {
+            for (int i = 0; i < 8; i++)
+                SerialRef->write(GOOD_SYNC_SEQUENCE[i]);
+        }
     }
 
     if (wait_for_sync) {
