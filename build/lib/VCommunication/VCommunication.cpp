@@ -98,13 +98,17 @@ void serial_update(unsigned long cur_time) {
                 else if (command_buffer[0] == GOOD_SYNC_SEQUENCE[2])
                     fully_synced = 1;
             } else {
-                if (!on_command(msg_type, msg_len, &command_buffer[0]))
-                    wait_for_sync = 1;
+                if (!on_command(msg_type, msg_len, &command_buffer[0])){
+                    //wait_for_sync = 1;
+                }
             }
         } else
             break;
         rb_size = read_buffer_size();
     }
+
+    digitalWrite(45, wait_for_sync ? HIGH : LOW);
+    digitalWrite(44, fully_synced ? HIGH : LOW);
 }
 
 void send_serial_command(uchar type, uchar len, char* cmd) {
