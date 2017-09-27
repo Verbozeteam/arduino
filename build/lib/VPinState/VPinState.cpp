@@ -97,7 +97,8 @@ uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
     if (msg_type == COMMAND_RESET_BOARD) {
         reset_board();
         return 1;
-    }
+    } else if (msg_type == COMMAND_SET_PIN_MODE)
+        return 1;
 
     if (msg_len < 2)
         return 0;
@@ -117,17 +118,17 @@ uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
 
     switch(msg_type) {
         case COMMAND_SET_PIN_MODE: {
-            // if (msg_len != 3)
-            //     return 0;
-            // if (!pin) {
-            //     if (pin_type == PIN_TYPE_DIGITAL) {
-            //         pin = digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
-            //     } else if (pin_type == PIN_TYPE_ANALOG) {
-            //         pin = analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
-            //     } else
-            //         return 0;
-            // } else
-            //     pin->setMode(command_buffer[2]);
+            if (msg_len != 3)
+                return 0;
+            if (!pin) {
+                if (pin_type == PIN_TYPE_DIGITAL) {
+                    pin = digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
+                } else if (pin_type == PIN_TYPE_ANALOG) {
+                    pin = analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
+                } else
+                    return 0;
+            } else
+                pin->setMode(command_buffer[2]);
             break;
         }
         case COMMAND_SET_VIRTUAL_PIN_MODE: {
