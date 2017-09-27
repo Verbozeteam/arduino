@@ -5,7 +5,7 @@ PinState* create_virtual_pin(int type, int data_len, char* data) {
         case 0: {
             if (data_len != 1)
                 return NULL;
-            return new CentralACPinState(data[0]);
+            return new CentralACPinState(data[0] & 0xFF);
         }
         case 1: {
             return NULL;

@@ -102,8 +102,8 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
     if (msg_len < 2)
         return 0;
 
-    int pin_type = (int)command_buffer[0];
-    int pin_index = (int)command_buffer[1];
+    int pin_type = (int)command_buffer[0] & 0xFF;
+    int pin_index = (int)command_buffer[1] & 0xFF;
 
     PinState* pin;
     if (pin_type == PIN_TYPE_DIGITAL && pin_index < num_digital_pins) {
@@ -121,13 +121,13 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
                 return 0;
             if (!pin) {
                 if (pin_type == PIN_TYPE_DIGITAL) {
-                    pin = digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
+                    pin = digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2] & 0xFF);
                 } else if (pin_type == PIN_TYPE_ANALOG) {
-                    pin = analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
+                    pin = analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2] & 0xff);
                 } else
                     return 0;
             } else
-                pin->setMode(command_buffer[2]);
+                pin->setMode(command_buffer[2] & 0xFF);
             break;
         }
         case COMMAND_SET_VIRTUAL_PIN_MODE: {
@@ -137,7 +137,7 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
             if (pin)
                 delete pin;
 
-            pin = virtual_pins[pin_index] = create_virtual_pin(command_buffer[2], msg_len-3, &command_buffer[3]);
+            pin = virtual_pins[pin_index] = create_virtual_pin(command_buffer[2] & 0xFF, msg_len-3, &command_buffer[3]);
             if (!pin)
                 return 0;
 
@@ -146,7 +146,7 @@ int on_command(int msg_type, int msg_len, char* command_buffer) {
         case COMMAND_SET_PIN_OUTPUT: {
             if (msg_len != 3)
                 return 0;
-            pin->setOutput(command_buffer[2]);
+            pin->setOutput(command_buffer[2] & 0xFF);
             break;
         }
         case COMMAND_READ_PIN_INPUT: {
