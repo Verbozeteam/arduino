@@ -39,9 +39,11 @@ class CentralACPinState : public PinState {
 protected:
     float m_target_temp;
     float m_cur_temp;
+    float m_airflow;
+    int m_valve_pin;
 
 public:
-    CentralACPinState(int temp_index = 0);
+    CentralACPinState(int valve_pin, int temp_index);
 
     virtual void update(unsigned long cur_time);
 

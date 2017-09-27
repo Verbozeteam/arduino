@@ -3,9 +3,9 @@
 PinState* create_virtual_pin(int type, int data_len, char* data) {
     switch (type) {
         case 0: {
-            if (data_len != 1)
+            if (data_len != 2)
                 return NULL;
-            return new CentralACPinState(data[0]);
+            return new CentralACPinState(data[0], data[1]);
         }
         case 1: {
             return NULL;
@@ -33,6 +33,7 @@ void TemperatureEngine::initialize(int one_wire_pin) {
 
 void TemperatureEngine::discoverOneWireDevices() {
     m_num_sensors = 0;
+    byte addr[8];
     while (m_one_wire.search(addr))
         m_num_sensors++;
     m_one_wire.reset_search();
@@ -46,11 +47,14 @@ void TemperatureEngine::update(unsigned long cur_time) {
 }
 
 
-CentralACPinState::CentralACPinState(int temp_index)
+CentralACPinState::CentralACPinState(int valve_pin, int temp_index)
     : PinState(temp_index, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL),
       m_cur_temp(25.0f),
-      m_target_temp(25.0f)
+      m_target_temp(25.0f),
+      m_airflow(0.0f),
+      m_valve_pin(valve_pin);
 {
+    pinMode(valve_pin, OUTPUT);
 }
 
 void CentralACPinState::update(unsigned long cur_time) {
@@ -58,8 +62,8 @@ void CentralACPinState::update(unsigned long cur_time) {
 
     float diff = m_cur_temp - m_target_temp;
     float coeff = (min(max(diff, -10), 10)) / 10; // [-1, 1]
-    fAirflow = min(max(fAirflow + TemperatureEngine::fHomeostasis * coeff, 0), 255);
-    analogWrite(, (int)fAirflow);
+    m_airflow = min(max(m_airflow + TemperatureEngine::fHomeostasis * coeff, 0), 255);
+    analogWrite(m_valve_pin, (int)m_airflow);
 }
 
 void CentralACPinState::setOutput(int output) {

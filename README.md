@@ -21,7 +21,8 @@ All communication happens by sending messages in the following format: `[code (1
 - length: Length of the following bytes (pin-specific)
 - pin_index: Index of the pin
 - virtual_pin_type:
-    - 0: Central AC. pin-specific info: `[temp_index]`
+    - 0: Central AC. pin-specific info: `[valve_pin][temp_index]`
+        - valve_pin: Pin of the PWM valve to be controlled by this pin
         - temp_index: Index of the temperature sensor on the OneWire bus
     - 1: ISR Light controller
 
