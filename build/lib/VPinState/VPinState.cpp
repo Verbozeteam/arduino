@@ -7,11 +7,11 @@ extern DigitalPinState* digital_pins[];
 extern AnalogPinState* analog_pins[];
 extern PinState* virtual_pins[];
 
-byte num_digital_pins = 0;
-byte num_analog_pins = 0;
-byte num_virtual_pins = 0;
+uchar num_digital_pins = 0;
+uchar num_analog_pins = 0;
+uchar num_virtual_pins = 0;
 
-PinState::PinState(byte index, byte mode, byte type) : m_index(index), m_mode(mode), m_type(type) {
+PinState::PinState(uchar index, uchar mode, uchar type) : m_index(index), m_mode(mode), m_type(type) {
     pinMode(index, mode);
     m_next_report = 0;
     m_read_interval = -1;
@@ -23,13 +23,13 @@ void PinState::update(unsigned long cur_time) {
             m_next_report = -1;
         else
             m_next_report = cur_time + m_read_interval;
-        byte reading = readInput();
+        uchar reading = readInput();
         char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
         send_serial_command(COMMAND_PIN_READING, 3, cmd);
     }
 }
 
-void PinState::setMode(byte mode) {
+void PinState::setMode(uchar mode) {
     m_mode = mode;
     pinMode(m_index, m_mode);
 }
@@ -42,44 +42,44 @@ void PinState::setReadingInterval(unsigned long interval) {
     m_read_interval = interval;
 }
 
-DigitalPinState::DigitalPinState(byte index, byte mode) : PinState(index, mode, PIN_TYPE_DIGITAL) {
+DigitalPinState::DigitalPinState(uchar index, uchar mode) : PinState(index, mode, PIN_TYPE_DIGITAL) {
 }
 
-void DigitalPinState::setOutput(byte output) {
+void DigitalPinState::setOutput(uchar output) {
     if (m_mode == PIN_MODE_OUTPUT)
         digitalWrite(m_index, output);
     else if (m_mode == PIN_MODE_PWM)
         analogWrite(m_index, output);
 }
 
-byte DigitalPinState::readInput() {
+uchar DigitalPinState::readInput() {
     return digitalRead(m_index);
 }
 
-AnalogPinState::AnalogPinState(byte index, byte mode) : PinState(index, mode, PIN_TYPE_ANALOG) {
+AnalogPinState::AnalogPinState(uchar index, uchar mode) : PinState(index, mode, PIN_TYPE_ANALOG) {
 }
 
-void AnalogPinState::setOutput(byte output) {
+void AnalogPinState::setOutput(uchar output) {
 }
 
-byte AnalogPinState::readInput() {
+uchar AnalogPinState::readInput() {
     return analogRead(m_index);
 }
 
 void reset_board() {
-    for (byte i = 0; i < num_digital_pins; i++) {
+    for (uchar i = 0; i < num_digital_pins; i++) {
         if (digital_pins[i]) {
             delete digital_pins[i];
             digital_pins[i] = NULL;
         }
     }
-    for (byte i = 0; i < num_analog_pins; i++) {
+    for (uchar i = 0; i < num_analog_pins; i++) {
         if (analog_pins[i]) {
             delete analog_pins[i];
             analog_pins[i] = NULL;
         }
     }
-    for (byte i = 0; i < num_virtual_pins; i++) {
+    for (uchar i = 0; i < num_virtual_pins; i++) {
         if (virtual_pins[i]) {
             delete virtual_pins[i];
             virtual_pins[i] = NULL;
@@ -87,13 +87,13 @@ void reset_board() {
     }
 }
 
-void init_pin_states(byte num_digital, byte num_analog, byte num_virtual) {
+void init_pin_states(uchar num_digital, uchar num_analog, uchar num_virtual) {
     num_digital_pins = num_digital;
     num_analog_pins = num_analog;
     num_virtual_pins = num_virtual;
 }
 
-byte on_command(byte msg_type, byte msg_len, char* command_buffer) {
+uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
     if (msg_type == COMMAND_RESET_BOARD) {
         reset_board();
         return 1;
@@ -102,8 +102,8 @@ byte on_command(byte msg_type, byte msg_len, char* command_buffer) {
     if (msg_len < 2)
         return 0;
 
-    byte pin_type = command_buffer[0];
-    byte pin_index = command_buffer[1];
+    uchar pin_type = command_buffer[0];
+    uchar pin_index = command_buffer[1];
 
     PinState* pin;
     if (pin_type == PIN_TYPE_DIGITAL && pin_index < num_digital_pins) {
@@ -158,17 +158,17 @@ byte on_command(byte msg_type, byte msg_len, char* command_buffer) {
         case COMMAND_REGISTER_PIN_LISTENER: {
             if (msg_len != 6)
                 return 0;
-            unsigned long byte1 = (unsigned long)command_buffer[2] & 0xFF;
-            unsigned long byte2 = (unsigned long)command_buffer[3] & 0xFF;
-            unsigned long byte3 = (unsigned long)command_buffer[4] & 0xFF;
-            unsigned long byte4 = (unsigned long)command_buffer[5] & 0xFF;
-            byte2 <<= 8;
-            byte3 <<= 16;
-            byte4 <<= 24;
-            byte1 |= byte2;
-            byte1 |= byte3;
-            byte1 |= byte4;
-            pin->setReadingInterval(byte1);
+            unsigned long uchar1 = (unsigned long)command_buffer[2] & 0xFF;
+            unsigned long uchar2 = (unsigned long)command_buffer[3] & 0xFF;
+            unsigned long uchar3 = (unsigned long)command_buffer[4] & 0xFF;
+            unsigned long uchar4 = (unsigned long)command_buffer[5] & 0xFF;
+            uchar2 <<= 8;
+            uchar3 <<= 16;
+            uchar4 <<= 24;
+            uchar1 |= uchar2;
+            uchar1 |= uchar3;
+            uchar1 |= uchar4;
+            pin->setReadingInterval(uchar1);
             break;
         }
         default:

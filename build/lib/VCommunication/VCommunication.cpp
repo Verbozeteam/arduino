@@ -3,7 +3,7 @@
 
 #define MAX_COMMAND_SIZE 128
 
-extern byte on_command(byte msg_type, byte msg_len, char* command_buffer);
+extern uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer);
 
 char GOOD_SYNC_SEQUENCE[8] = {(char)254, (char)6, (char)253, (char)11, (char)76, (char)250, (char)250, (char)255};
 char SYNC_SEQUENCE[8] = {(char)254, (char)6, (char)252, (char)11, (char)76, (char)250, (char)250, (char)255};
@@ -22,15 +22,15 @@ void serial_init(HardwareSerial* serial) {
     SerialRef->begin(9600);
 }
 
-byte serial_is_synced() {
+uchar serial_is_synced() {
     return fully_synced == 1;
 }
 
 void serial_update(unsigned long cur_time) {
-    int num_bytes = SerialRef->available();
-    while (num_bytes > 0 && !read_buffer_full()) {
+    int num_uchars = SerialRef->available();
+    while (num_uchars > 0 && !read_buffer_full()) {
         read_buffer_append(SerialRef->read());
-        num_bytes--;
+        num_uchars--;
     }
 
     if (cur_time >= sync_send_timer) {
@@ -107,7 +107,7 @@ void serial_update(unsigned long cur_time) {
     }
 }
 
-void send_serial_command(byte type, byte len, char* cmd) {
+void send_serial_command(uchar type, uchar len, char* cmd) {
     SerialRef->write(type);
     SerialRef->write(len);
     for (int i = 0; i < len; i++)

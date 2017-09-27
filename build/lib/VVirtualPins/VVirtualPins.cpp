@@ -1,6 +1,6 @@
 #include <VVirtualPins.h>
 
-PinState* create_virtual_pin(byte type, byte data_len, char* data) {
+PinState* create_virtual_pin(uchar type, uchar data_len, char* data) {
     switch (type) {
         case 0: {
             if (data_len != 1)
@@ -18,11 +18,11 @@ PinState* create_virtual_pin(byte type, byte data_len, char* data) {
 
 OneWire TemperatureEngine::m_one_wire(0);
 DallasTemperature TemperatureEngine::m_sensors;
-byte TemperatureEngine::m_num_sensors;
+uchar TemperatureEngine::m_num_sensors;
 float TemperatureEngine::m_cur_temp;
 unsigned long TemperatureEngine::m_next_read;
 
-void TemperatureEngine::initialize(byte one_wire_pin) {
+void TemperatureEngine::initialize(uchar one_wire_pin) {
     m_one_wire = OneWire(one_wire_pin);
     m_sensors = DallasTemperature(&m_one_wire);
     m_sensors.begin();
@@ -33,7 +33,7 @@ void TemperatureEngine::initialize(byte one_wire_pin) {
 
 void TemperatureEngine::discoverOneWireDevices() {
     m_num_sensors = 0;
-    byte addr[8];
+    uchar addr[8];
     while (m_one_wire.search(addr))
         m_num_sensors++;
     m_one_wire.reset_search();
@@ -47,15 +47,15 @@ void TemperatureEngine::update(unsigned long cur_time) {
 }
 
 
-CentralACPinState::CentralACPinState(byte temp_index)
+CentralACPinState::CentralACPinState(uchar temp_index)
     : PinState(temp_index, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL)
 {
 }
 
-void CentralACPinState::setOutput(byte output) {
+void CentralACPinState::setOutput(uchar output) {
 }
 
-byte CentralACPinState::readInput() {
+uchar CentralACPinState::readInput() {
     float m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(m_index);
-    return (byte)(m_cur_temp*2.0f);
+    return (uchar)(m_cur_temp*2.0f);
 }

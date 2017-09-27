@@ -2,14 +2,14 @@
 
 #include <HardwareSerial.h>
 
-#ifndef byte
-#define byte unsigned char
+#ifndef uchar
+#define uchar unsigned char
 #endif
 
 void serial_init(HardwareSerial* serial);
 
-byte serial_is_synced();
+uchar serial_is_synced();
 
 void serial_update(unsigned long cur_time);
 
-void send_serial_command(byte type, byte len, char* cmd);
+void send_serial_command(uchar type, uchar len, char* cmd);

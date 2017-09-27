@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef byte
-#define byte unsigned char
+#ifndef uchar
+#define uchar unsigned char
 #endif
 
 // Messages sent by the Arduino
@@ -31,46 +31,46 @@
 
 class PinState {
 protected:
-    byte m_index;
-    byte m_mode;
-    byte m_type;
+    uchar m_index;
+    uchar m_mode;
+    uchar m_type;
     unsigned long m_next_report;
     unsigned long m_read_interval; // interval (in ms) at which readings should happen
 
 public:
-    PinState(byte index = 0, byte mode = PIN_MODE_OUTPUT, byte type = PIN_TYPE_DIGITAL);
+    PinState(uchar index = 0, uchar mode = PIN_MODE_OUTPUT, uchar type = PIN_TYPE_DIGITAL);
 
     virtual void update(unsigned long cur_time);
 
-    virtual void setMode(byte mode);
+    virtual void setMode(uchar mode);
 
     virtual void markForReading();
 
     virtual void setReadingInterval(unsigned long interval);
 
-    virtual void setOutput(byte output) = 0;
+    virtual void setOutput(uchar output) = 0;
 
-    virtual byte readInput() = 0;
+    virtual uchar readInput() = 0;
 };
 
 class DigitalPinState : public PinState {
 public:
-    DigitalPinState(byte index = 0, byte mode = PIN_MODE_OUTPUT);
+    DigitalPinState(uchar index = 0, uchar mode = PIN_MODE_OUTPUT);
 
-    virtual void setOutput(byte output);
+    virtual void setOutput(uchar output);
 
-    virtual byte readInput();
+    virtual uchar readInput();
 };
 
 class AnalogPinState : public PinState {
 public:
-    AnalogPinState(byte index = 0, byte mode = PIN_MODE_INPUT);
+    AnalogPinState(uchar index = 0, uchar mode = PIN_MODE_INPUT);
 
-    virtual void setOutput(byte output);
+    virtual void setOutput(uchar output);
 
-    virtual byte readInput();
+    virtual uchar readInput();
 };
 
-void init_pin_states(byte num_digital, byte num_analog, byte num_virtual);
-byte on_command(byte msg_type, byte msg_len, char* command_buffer);
+void init_pin_states(uchar num_digital, uchar num_analog, uchar num_virtual);
+uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer);
 void pin_states_update(unsigned long cur_time);
