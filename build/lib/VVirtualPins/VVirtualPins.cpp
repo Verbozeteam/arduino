@@ -52,7 +52,7 @@ CentralACPinState::CentralACPinState(int valve_pin, int temp_index)
       m_cur_temp(25.0f),
       m_target_temp(25.0f),
       m_airflow(0.0f),
-      m_valve_pin(valve_pin);
+      m_valve_pin(valve_pin)
 {
     pinMode(valve_pin, OUTPUT);
 }
