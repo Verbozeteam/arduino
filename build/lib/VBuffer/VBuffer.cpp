@@ -1,6 +1,6 @@
 #include <VBuffer.h>
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 2048
 
 char read_buffer[BUFFER_SIZE];
 int read_buffer_start = 0;
