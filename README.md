@@ -21,8 +21,7 @@ All communication happens by sending messages in the following format: `[code (1
 - length: Length of the following bytes (pin-specific)
 - pin_index: Index of the pin
 - virtual_pin_type:
-    - 0: Central AC. pin-specific info: `[valve_pin][temp_index]`
-        - valve_pin: Pin of the PWM valve to be controlled by this pin
+    - 0: Central AC. pin-specific info: `[temp_index]`
         - temp_index: Index of the temperature sensor on the OneWire bus
     - 1: ISR Light controller
 
@@ -41,3 +40,6 @@ Makes the Arduino report the pin's reading every interval
 - pin_type: 0 for digital pin, 1 for analog pin, 2 for virtual pin
 - pin_index: Index of the pin
 - interval: interval (in ms) at which the Arduino reads the pin (-1 means don't read)
+
+### Code 6: Reset board state `[6][0]`
+Resets all pin states

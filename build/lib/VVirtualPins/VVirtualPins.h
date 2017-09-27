@@ -17,7 +17,6 @@ class TemperatureEngine {
     static int m_num_sensors;
     static float m_cur_temp;
     static unsigned long m_next_read;
-    static const float fHomeostasis;
 
     static void discoverOneWireDevices();
 
@@ -32,16 +31,8 @@ public:
  * Central AC Virtual pin
  */
 class CentralACPinState : public PinState {
-protected:
-    float m_target_temp;
-    float m_cur_temp;
-    float m_airflow;
-    int m_valve_pin;
-
 public:
-    CentralACPinState(int valve_pin, int temp_index);
-
-    virtual void update(unsigned long cur_time);
+    CentralACPinState(int temp_index);
 
     virtual void setOutput(int output);
 

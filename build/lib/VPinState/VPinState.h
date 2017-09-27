@@ -19,7 +19,6 @@
 #define PIN_MODE_OUTPUT 1
 #define PIN_MODE_PWM    2
 
-
 #define VIRTUAL_PIN_TYPE_CENTRAL_AC 0
 #define VIRTUAL_PIN_TYPE_ISR_LIGHT  1
 
