@@ -80,8 +80,8 @@ void serial_update(unsigned long cur_time) {
 
     int rb_size = read_buffer_size();
     while (!wait_for_sync && rb_size > 2) {
-        uchar msg_type = read_buffer_at(0);
-        uchar msg_len = read_buffer_at(1);
+        char msg_type = read_buffer_at(0);
+        char msg_len = read_buffer_at(1);
         if (rb_size >= 2 + msg_len) {
             read_buffer_consume(2);
             for (int i = 0; i < msg_len; i++)
