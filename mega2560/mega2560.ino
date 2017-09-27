@@ -1,5 +1,6 @@
 #include <VCommunication.h>
 #include <VPinState.h>
+#include <VVirtualPins.h>
 
 #define NUM_DIGITAL_PINS 53
 #define NUM_ANALOG_PINS 16
