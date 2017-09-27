@@ -1,6 +1,6 @@
 #pragma once
 
-#include <PinState.h>
+#include <VPinState.h>
 
 #include <SPI.h>
 #include <OneWire.h>
