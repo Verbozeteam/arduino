@@ -1,4 +1,5 @@
 #include <VPinState.h>
+#include <VVirtualPins.h>
 #include <VCommunication.h>
 #include <Arduino.h>
 
