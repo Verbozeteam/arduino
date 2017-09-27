@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef byte
+#define byte unsigned char
+#endif
+
 // Messages sent by the Arduino
 #define COMMAND_PIN_READING             0
 
