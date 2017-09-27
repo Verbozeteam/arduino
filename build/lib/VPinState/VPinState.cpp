@@ -2,11 +2,6 @@
 #include <VCommunication.h>
 #include <Arduino.h>
 
-#include <SPI.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#include <TimerOne.h>
-
 extern DigitalPinState* digital_pins[];
 extern AnalogPinState* analog_pins[];
 extern PinState* virtual_pins[];

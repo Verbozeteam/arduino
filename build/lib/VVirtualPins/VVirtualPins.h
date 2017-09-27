@@ -1,6 +1,10 @@
 #pragma once
 
 #include <VPinState.h>
+#include <SPI.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <TimerOne.h>
 
 #define VIRTUAL_PIN_TYPE_CENTRAL_AC 0
 #define VIRTUAL_PIN_TYPE_ISR_LIGHT  1
