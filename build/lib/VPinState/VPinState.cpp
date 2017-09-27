@@ -94,7 +94,6 @@ void init_pin_states(uchar num_digital, uchar num_analog, uchar num_virtual) {
 }
 
 uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
-    return 1;
     if (msg_type == COMMAND_RESET_BOARD) {
         reset_board();
         return 1;
@@ -122,9 +121,9 @@ uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
                 return 0;
             if (!pin) {
                 if (pin_type == PIN_TYPE_DIGITAL) {
-                    pin = digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
+                    digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
                 } else if (pin_type == PIN_TYPE_ANALOG) {
-                    pin = analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
+                    analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
                 } else
                     return 0;
             } else
