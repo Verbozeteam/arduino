@@ -15,7 +15,7 @@ PinState* create_virtual_pin(int type, int data_len, char* data) {
     return NULL;
 }
 
-OneWire TemperatureEngine::m_one_wire;
+OneWire TemperatureEngine::m_one_wire(0);
 DallasTemperature TemperatureEngine::m_sensors;
 int TemperatureEngine::m_num_sensors;
 float TemperatureEngine::m_cur_temp;
