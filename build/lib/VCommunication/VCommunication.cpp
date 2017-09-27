@@ -27,10 +27,10 @@ uchar serial_is_synced() {
 }
 
 void serial_update(unsigned long cur_time) {
-    int num_uchars = SerialRef->available();
-    while (num_uchars > 0 && !read_buffer_full()) {
+    int num_bytes = SerialRef->available();
+    while (num_bytes > 0 && !read_buffer_full()) {
         read_buffer_append(SerialRef->read());
-        num_uchars--;
+        num_bytes--;
     }
 
     if (cur_time >= sync_send_timer) {
@@ -80,8 +80,8 @@ void serial_update(unsigned long cur_time) {
 
     int rb_size = read_buffer_size();
     while (!wait_for_sync && rb_size > 2) {
-        char msg_type = read_buffer_at(0);
-        char msg_len = read_buffer_at(1);
+        uchar msg_type = read_buffer_at(0);
+        uchar msg_len = read_buffer_at(1);
         if (rb_size >= 2 + msg_len) {
             read_buffer_consume(2);
             for (int i = 0; i < msg_len; i++)

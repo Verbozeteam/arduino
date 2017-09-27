@@ -94,11 +94,11 @@ void init_pin_states(uchar num_digital, uchar num_analog, uchar num_virtual) {
 }
 
 uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
+    return 1;
     if (msg_type == COMMAND_RESET_BOARD) {
         reset_board();
         return 1;
-    } else if (msg_type == COMMAND_SET_PIN_MODE)
-        return 1;
+    }
 
     if (msg_len < 2)
         return 0;
