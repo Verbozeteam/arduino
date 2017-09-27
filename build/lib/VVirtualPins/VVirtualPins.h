@@ -1,6 +1,5 @@
 #pragma once
 
-#include <VPinState.h>
 #include <SPI.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -10,6 +9,8 @@
 #define VIRTUAL_PIN_TYPE_ISR_LIGHT  1
 
 #define TEMPERATURE_READ_INTERVAL 2000
+
+class PinState;
 
 PinState* create_virtual_pin(int type, int data_len, char* data);
 
