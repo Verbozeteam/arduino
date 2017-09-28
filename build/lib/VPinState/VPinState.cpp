@@ -40,6 +40,7 @@ void PinState::markForReading() {
 
 void PinState::setReadingInterval(unsigned long interval) {
     m_read_interval = interval;
+    m_next_report = 0;
 }
 
 DigitalPinState::DigitalPinState(uchar index, uchar mode) : PinState(index, mode, PIN_TYPE_DIGITAL) {
