@@ -79,8 +79,10 @@ void serial_update(unsigned long cur_time) {
             if (found_sync) {
                 int found_full = read_buffer_at(sync_start+2) == FULL_SYNC_SEQUENCE[2];
                 read_buffer_consume(sync_start+SYNC_SEQUENCE_LEN);
-                if (found_full)
+                if (found_full) {
+                    sync_send_timer = 0;
                     serial_is_synced(1);
+                }
                 else
                     half_sync = 1;
             } else {
