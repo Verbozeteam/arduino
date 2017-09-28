@@ -18,7 +18,7 @@ PinState::PinState(uchar index, uchar mode, uchar type) : m_index(index), m_mode
 }
 
 void PinState::update(unsigned long cur_time) {
-    if (m_mode == PIN_MODE_INPUT){// && cur_time >= m_next_report) {
+    if (m_mode == PIN_MODE_INPUT && cur_time >= m_next_report) {
         if (m_read_interval == -1)
             m_next_report = -1;
         else

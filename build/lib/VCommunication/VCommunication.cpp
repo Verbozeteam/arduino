@@ -86,7 +86,11 @@ void serial_update(unsigned long cur_time) {
                 else
                     half_sync = 1;
             } else {
-                int truncate_size = read_buffer_size() - SYNC_SEQUENCE_LEN;
+                rb_size = read_buffer_size();
+                int truncate_size;
+                for (truncate_size = 0; truncate_size < rb_size; truncate_size++)
+                    if (read_buffer_at(truncate_size) == SYNC_SEQUENCE[0])
+                        break;
                 read_buffer_consume(truncate_size);
             }
         }
