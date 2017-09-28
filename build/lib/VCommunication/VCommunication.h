@@ -8,7 +8,7 @@
 
 void serial_init(HardwareSerial* serial);
 
-uchar serial_is_synced();
+uchar serial_is_synced(int set_to = -1);
 
 void serial_update(unsigned long cur_time);
 

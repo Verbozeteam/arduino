@@ -1,5 +1,6 @@
 #include <VCommunication.h>
 #include <VBuffer.h>
+#include <Arduino.h>
 
 #define MAX_COMMAND_SIZE 128
 
@@ -22,7 +23,7 @@ void serial_init(HardwareSerial* serial) {
     SerialRef->begin(9600);
 }
 
-uchar serial_is_synced(int set_to = -1) {
+uchar serial_is_synced(int set_to) {
     if (set_to != -1) {
         half_sync = set_to;
         full_sync = set_to;
@@ -33,7 +34,7 @@ uchar serial_is_synced(int set_to = -1) {
             sync_send_period = 10000;
         }
     }
-    return fully_synced == 1;
+    return full_sync == 1;
 }
 
 void serial_update(unsigned long cur_time) {
