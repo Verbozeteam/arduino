@@ -42,6 +42,7 @@ void serial_update(unsigned long cur_time) {
     while (num_bytes > 0 && !read_buffer_full()) {
         read_buffer_append(SerialRef->read());
         num_bytes--;
+        digitalWrite(42, (num_bytes / 300) % 2);
     }
 
     if (cur_time >= sync_send_timer) {
@@ -57,6 +58,7 @@ void serial_update(unsigned long cur_time) {
     }
 
     if (!full_sync) {
+        digitalWrite(42, (cur_time / 300) % 2);
         // look for a sync sequence
         int rb_size = read_buffer_size();
         if (rb_size >= SYNC_SEQUENCE_LEN) {
@@ -98,6 +100,7 @@ void serial_update(unsigned long cur_time) {
 
     int rb_size = read_buffer_size();
     while (full_sync && rb_size > 2) {
+        digitalWrite(42, (rb_size / 300) % 2);
         char msg_type = read_buffer_at(0);
         char msg_len = read_buffer_at(1);
         if (rb_size >= 2 + msg_len) {
