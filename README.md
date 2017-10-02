@@ -2,6 +2,14 @@
 
 Arduino controller code
 
+# Uploading the code to an Arduino
+Run `./upload.sh <board>` where board is any implemented board (such as "mega2560").
+
+# Running the emulator
+The emulator requires [shammam](https://github.com/Hasan-Jawaheri/shammam) to be installed. To launch the emulator go to the `emulation` directory and run `./run_emulator.sh <board>` where board is any implemented board (such as "mega2560").
+
+PLEASE FIX ME: The script currently requires the shammam repository to be cloned in the same directory as this repository.
+
 # Communication Protocol
 All communication happens by sending messages in the following format: `[code (1 byte)][message length N (1 byte)][message (N bytes)]`. Message codes are the following:
 
