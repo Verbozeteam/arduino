@@ -145,19 +145,19 @@ uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
             break;
         }
         case COMMAND_SET_PIN_OUTPUT: {
-            if (msg_len != 3)
+            if (msg_len != 3 || !pin)
                 return 0;
             pin->setOutput(command_buffer[2]);
             break;
         }
         case COMMAND_READ_PIN_INPUT: {
-            if (msg_len != 2)
+            if (msg_len != 2 || !pin)
                 return 0;
             pin->markForReading();
             break;
         }
         case COMMAND_REGISTER_PIN_LISTENER: {
-            if (msg_len != 6)
+            if (msg_len != 6 || !pin)
                 return 0;
             unsigned long byte1 = (unsigned long)command_buffer[2] & 0xFF;
             unsigned long byte2 = (unsigned long)command_buffer[3] & 0xFF;

@@ -8,5 +8,6 @@ cp $1/$1.ino build/src/
 
 cd build/
 ino build -m $1
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 ino upload -m $1
 

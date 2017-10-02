@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 <board>" >&2
+  exit 1
+fi
+
+PATH_TO_SHAMMAM="../../shammam/shammam.py"
+SHAMMAM_ARGS=""
+
+BOARD="$1"
+LIBS_PATH="../build/lib"
+LIBRARY_SOURCES="$LIBS_PATH/V*/*.cpp"
+LIBRARY_INCLUDE_DIRS="$LIBS_PATH/V*"
+
+STUB_SOURCES="src/*"
+STUB_INCLUDE_DIRS="inc"
+
+SOURCES="../$BOARD/$BOARD.ino $LIBRARY_SOURCES $STUB_SOURCES"
+EXTRA_INCLUDES="$LIBRARY_INCLUDE_DIRS $STUB_INCLUDE_DIRS"
+python $PATH_TO_SHAMMAM -s $SOURCES -i $EXTRA_INCLUDES $SHAMMAM_ARGS
+

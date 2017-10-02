@@ -39,6 +39,7 @@ protected:
 
 public:
     PinState(uchar index = 0, uchar mode = PIN_MODE_OUTPUT, uchar type = PIN_TYPE_DIGITAL);
+    virtual ~PinState() {}
 
     virtual void update(unsigned long cur_time);
 
