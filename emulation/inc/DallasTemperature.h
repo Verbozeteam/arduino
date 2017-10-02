@@ -4,15 +4,12 @@
 
 class DallasTemperature {
 public:
-    DallasTemperature() {}
-    DallasTemperature(OneWire* ow) {
-    }
+    DallasTemperature() {} // dummy
+    DallasTemperature(OneWire* ow) {} // dummy
 
-    void begin() {}
+    void begin() {} // dummy
 
-    void requestTemperatures() {}
+    void requestTemperatures() {} // dummy
 
-    float getTempCByIndex(int i) {
-        return 0.0f;
-    }
+    float getTempCByIndex(int i);
 };

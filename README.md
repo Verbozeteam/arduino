@@ -6,7 +6,7 @@ Arduino controller code
 Run `./upload.sh <board>` where board is any implemented board (such as "mega2560").
 
 # Running the emulator
-The emulator requires [shammam](https://github.com/Hasan-Jawaheri/shammam) to be installed. To launch the emulator go to the `emulation` directory and run `./run_emulator.sh <board>` where board is any implemented board (such as "mega2560").
+The emulator requires [shammam](https://github.com/Verbozeteam/shammam) to be installed. To launch the emulator go to the `emulation` directory and run `./run_emulator.sh <board>` where board is any implemented board (such as "mega2560").
 
 PLEASE FIX ME: The script currently requires the shammam repository to be cloned in the same directory as this repository.
 

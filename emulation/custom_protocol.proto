@@ -30,5 +30,5 @@ message Empty {
 }
 
 message Temperature {
-    int32 temp = 1; // temperature to set
+    float temp = 1; // temperature to set
 }
