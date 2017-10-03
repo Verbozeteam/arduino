@@ -16,12 +16,12 @@ hotel card : 44 (input 0v/5v)
 hotel power: 42 (output 0v/5v)
 */
 
-#define USE_ISR_DIMMERS
+//#define USE_ISR_DIMMERS
 
 //changable
 const int NUM_DIMMERS = 4;
 const int NUM_LIGHTS = 10;
-const int NUM_CURTAINS = 4;
+const int NUM_CURTAINS = 3;
 // shouldn't change
 const int NUM_ACS = 2;
 
@@ -64,23 +64,22 @@ DallasTemperature sensors(&oneWire);
 char buffer[64];
 int pos;
 
-void Wakeup() {
-  SetLight(0, 1);
-  SetLight(1, 1);
-  SetLight(2, 1);
-}
+int discoverOneWireDevices();
 
 void SetCurtain ( int curtain, int action ) {
   curtains[curtain] = action;
   if ( action == 0 ) {
     digitalWrite ( BASE_CURTAIN_PORT + 2 * curtain, LOW );
     digitalWrite ( BASE_CURTAIN_PORT + 1 + 2 * curtain, LOW );
+    printf("%d LOW LOW\n", curtain);
   } else if ( action == 1 ) {
     digitalWrite ( BASE_CURTAIN_PORT + 2 * curtain, LOW );
     digitalWrite ( BASE_CURTAIN_PORT + 1 + 2 * curtain, HIGH );
+    printf("%d LOW HIGH\n", curtain);
   } else if ( action == 2 ) {
     digitalWrite ( BASE_CURTAIN_PORT + 2 * curtain, HIGH );
     digitalWrite ( BASE_CURTAIN_PORT + 1 + 2 * curtain, LOW );
+    printf("%d HIGH LOW\n", curtain);
   }
 }
 
@@ -141,6 +140,12 @@ void SetAllOutputValues(boolean set_off = false) {
   }
 }
 
+void Wakeup() {
+  SetLight(0, 1);
+  SetLight(1, 1);
+  SetLight(2, 1);
+}
+
 bool ExecuteCommand ( char buf[64] ) {
   int colon = -1;//buf.indexOf ( ':' );
   int len = 0;
@@ -163,6 +168,9 @@ bool ExecuteCommand ( char buf[64] ) {
   int val = atoi(valStr);
   if (val < 0)
     return false;
+#ifdef __SHAMMAM_SIMULATION__
+  printf("%s\n", buf);
+#endif
   if (strlen(name) == 2) {
     char p = name[0];
     int index = name[1] - '0';
@@ -358,8 +366,8 @@ void loop() {
     // central AC
     float fTempDiff = ACSetPts[i] - fTemp[i];
     float diff = fTemp[i] - ((float)ACSetPts[i]);
-    float coeff = (min(max(diff, -10), 10)) / 10; // [-1, 1]
-    fAirflow = min(max(fAirflow + fHomeostasis * coeff, 0), 255);
+    float coeff = (min(max(diff, -10.0f), 10.0f)) / 10.0f; // [-1, 1]
+    fAirflow = min(max(fAirflow + fHomeostasis * coeff, 0.0f), 255.0f);
     analogWrite(BASE_CENTRAL_AC_PORT + i, (int)fAirflow);
   }
 
@@ -377,7 +385,7 @@ void loop() {
   }
 }
 
-int discoverOneWireDevices(void) {
+int discoverOneWireDevices() {
   byte i;
   byte present = 0;
   byte data[12];
