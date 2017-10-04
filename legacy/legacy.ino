@@ -71,15 +71,12 @@ void SetCurtain ( int curtain, int action ) {
   if ( action == 0 ) {
     digitalWrite ( BASE_CURTAIN_PORT + 2 * curtain, LOW );
     digitalWrite ( BASE_CURTAIN_PORT + 1 + 2 * curtain, LOW );
-    printf("%d LOW LOW\n", curtain);
   } else if ( action == 1 ) {
-    digitalWrite ( BASE_CURTAIN_PORT + 2 * curtain, LOW );
-    digitalWrite ( BASE_CURTAIN_PORT + 1 + 2 * curtain, HIGH );
-    printf("%d LOW HIGH\n", curtain);
-  } else if ( action == 2 ) {
     digitalWrite ( BASE_CURTAIN_PORT + 2 * curtain, HIGH );
     digitalWrite ( BASE_CURTAIN_PORT + 1 + 2 * curtain, LOW );
-    printf("%d HIGH LOW\n", curtain);
+  } else if ( action == 2 ) {
+    digitalWrite ( BASE_CURTAIN_PORT + 2 * curtain, LOW );
+    digitalWrite ( BASE_CURTAIN_PORT + 1 + 2 * curtain, HIGH );
   }
 }
 
