@@ -86,6 +86,8 @@ void reset_board() {
             virtual_pins[i] = NULL;
         }
     }
+
+    ISREngine::reset();
 }
 
 void init_pin_states(uchar num_digital, uchar num_analog, uchar num_virtual) {

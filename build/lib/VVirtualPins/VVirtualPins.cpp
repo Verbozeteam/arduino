@@ -2,19 +2,20 @@
 
 PinState* create_virtual_pin(uchar type, uchar data_len, char* data) {
     switch (type) {
-        case 0: {
+        case VIRTUAL_PIN_CENTRAL_AC: {
             if (data_len != 1)
                 return NULL;
             return new CentralACPinState(data[0] & 0xFF);
         }
-        case 1: {
-            return NULL;
+        case VIRTUAL_PIN_ISR_LIGHT: {
+            if (data_len != 3)
+                return NULL;
+            return new ISRLightsPinState(data[0] & 0xFF, data[1] & 0xFF, data[2] & 0xFF);
         }
     }
 
     return NULL;
 }
-
 
 OneWire TemperatureEngine::m_one_wire(0);
 DallasTemperature TemperatureEngine::m_sensors;
@@ -58,4 +59,82 @@ void CentralACPinState::setOutput(uchar output) {
 uchar CentralACPinState::readInput() {
     float m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(m_index);
     return (uchar)(m_cur_temp*2.0f);
+}
+
+/**
+ * ISR Light
+ */
+
+int ISREngine::m_light_ports[MAX_ISR_LIGHTS];
+int ISREngine::m_light_intensities[MAX_ISR_LIGHTS];
+int ISREngine::m_sync_port = -1;
+int ISREngine::m_sync_full_period = -1;
+int ISREngine::m_sync_wavelength = -1;
+int ISREngine::m_clock_tick = 0;
+
+void ISREngine::timer_interrupt() {
+    for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
+        int port = m_light_ports[i];
+        int intensity = m_light_intensities[i];
+        if (port != -1 && intensity == m_clock_tick) {
+            digitalWrite(port, HIGH);
+            delayMicroseconds(m_sync_wavelength);
+            digitalWrite(port, LOW);
+        }
+    }
+    m_clock_tick++;
+}
+
+void ISREngine::zero_cross_interrupt() {
+    m_clock_tick=0;
+}
+
+void ISREngine::initialize(int frequency, int sync_port) {
+    if (m_sync_port != -1) {
+        detachInterrupt(digitalPinToInterrupt(m_sync_port));
+        Timer1.detachInterrupt();
+    }
+
+    if (frequency == 60) {
+        m_sync_full_period = 83;
+        m_sync_wavelength = 8;
+    } else {
+        m_sync_full_period = 100;
+        m_sync_wavelength = 10;
+    }
+
+    m_sync_port = sync_port;
+    m_clock_tick = 0;
+
+    attachInterrupt(digitalPinToInterrupt(m_sync_port), zero_cross_interrupt, RISING);
+    Timer1.initialize(m_sync_full_period);
+    Timer1.attachInterrupt(timer_interrupt);
+}
+
+void ISREngine::reset() {
+    for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
+        m_light_ports[i] = -1;
+        m_light_intensities[i] = -1;
+    }
+}
+
+ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out_port) {
+    m_my_index = 0;
+    for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
+        if (ISREngine::m_light_ports[i] == -1) {
+            m_my_index = i;
+            ISREngine::m_light_intensities[i] = 0;
+            ISREngine::m_light_ports[i] = out_port;
+            break;
+        }
+    }
+    ISREngine::initialize(frequency, sync_port);
+}
+
+void ISRLightsPinState::setOutput(uchar output) {
+    ISREngine::m_light_intensities[m_my_index] = output;
+}
+
+uchar ISRLightsPinState::readInput() {
+    return ISREngine::m_light_intensities[m_my_index];
 }

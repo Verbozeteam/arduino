@@ -15,6 +15,7 @@ void setup() {
     serial_init(&Serial);
 
     TemperatureEngine::initialize(ONE_WIRE_PIN);
+    ISREngine::reset();
 
     init_pin_states(NUM_DIGITAL_PINS, NUM_ANALOG_PINS, NUM_VIRTUAL_PINS);
 }

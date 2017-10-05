@@ -9,3 +9,7 @@ void TimerOne::initialize(int timer) {
 void TimerOne::attachInterrupt(void (*f)(void)) {
 
 }
+
+void TimerOne::detachInterrupt() {
+
+}

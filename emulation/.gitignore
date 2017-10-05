@@ -1,3 +1,4 @@
 legacy
 mega2560
+*.dSYM
 tmp/

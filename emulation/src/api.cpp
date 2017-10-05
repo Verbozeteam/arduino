@@ -1,5 +1,8 @@
 #include <RPC.h>
 #include "DallasTemperature.h" // A header file that mimics the actual DallasTemperature.h library header
+#ifndef _COMPILE_NO_LIBS_
+#include <VVirtualPins.h>
+#endif
 
 float g_temperature = 0.0f; // global "current sensor reading"
 
@@ -24,6 +27,38 @@ class CustomArduinoService : public ArduinoServiceBasicImpl {
         g_temperature = request->temp(); // doesn't need a lock
         return Status::OK;
     }
+
+#ifndef _COMPILE_NO_LIBS_
+    Status GetISRState(
+        ServerContext* context,
+        const shammam::Empty* request,
+        shammam::ISRState* reply) {
+
+        reply->set_sync(ISREngine::m_sync_port);
+        reply->set_full_period(ISREngine::m_sync_full_period);
+        reply->set_wavelength(ISREngine::m_sync_wavelength);
+        return Status::OK;
+    }
+
+    Status GetISRPinState(
+        ServerContext* context,
+        const shammam::ISRPin* request,
+        shammam::ISRPinState* reply) {
+
+        int pin = request->index();
+        for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
+            if (ISREngine::m_light_ports[i] == -1)
+                break;
+            if (ISREngine::m_light_ports[i] == pin) {
+                reply->set_port(ISREngine::m_light_ports[i]);
+                reply->set_state(ISREngine::m_light_intensities[i]);
+                break;
+            }
+        }
+
+        return Status::OK;
+    }
+#endif
 };
 
 /**

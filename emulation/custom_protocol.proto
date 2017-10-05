@@ -4,11 +4,13 @@ syntax = "proto3";
 package shammam;
 
 service Arduino {
-  rpc GetPinState (Pin) returns (State) {}
-  rpc SetPinState (PinAndState) returns (State) {}
-  rpc ResetPins (Empty) returns (Empty) {}
+    rpc GetPinState (Pin) returns (State) {}
+    rpc SetPinState (PinAndState) returns (State) {}
+    rpc ResetPins (Empty) returns (Empty) {}
 
-  rpc SetTemperatureSensor (Temperature) returns (Empty) {}
+    rpc SetTemperatureSensor (Temperature) returns (Empty) {}
+    rpc GetISRState (Empty) returns (ISRState) {}
+    rpc GetISRPinState (ISRPin) returns (ISRPinState) {}
 }
 
 message Pin {
@@ -31,4 +33,19 @@ message Empty {
 
 message Temperature {
     float temp = 1; // temperature to set
+}
+
+message ISRPin {
+    int32 index = 1; // index of the ISR pin in the ISR array
+}
+
+message ISRState {
+    int32 sync = 1;
+    int32 full_period = 2;
+    int32 wavelength = 3;
+}
+
+message ISRPinState {
+    int32 port = 1;
+    int32 state = 2;
 }
