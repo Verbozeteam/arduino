@@ -91,7 +91,7 @@ void ISREngine::zero_cross_interrupt() {
 
 void ISREngine::initialize(int frequency, int sync_port) {
     if (m_sync_port != -1) {
-        detachInterrupt(digitalPinToInterrupt(m_sync_port));
+        detachInterrupt(m_sync_port);
         Timer1.detachInterrupt();
     }
 
@@ -106,7 +106,7 @@ void ISREngine::initialize(int frequency, int sync_port) {
     m_sync_port = sync_port;
     m_clock_tick = 0;
 
-    attachInterrupt(digitalPinToInterrupt(m_sync_port), zero_cross_interrupt, RISING);
+    attachInterrupt(m_sync_port, zero_cross_interrupt, RISING);
     Timer1.initialize(m_sync_full_period);
     Timer1.attachInterrupt(timer_interrupt);
 }
