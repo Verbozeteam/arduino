@@ -99,11 +99,11 @@ void init_pin_states(uchar num_digital, uchar num_analog, uchar num_virtual) {
 uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
     if (msg_type == COMMAND_RESET_BOARD) {
         reset_board();
-        return 1;
+        return 0;
     }
 
     if (msg_len < 2)
-        return 0;
+        return 1;
 
     uchar pin_type = command_buffer[0];
     uchar pin_index = command_buffer[1];
@@ -116,51 +116,52 @@ uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
     } else if (pin_type == PIN_TYPE_VIRTUAL && pin_index < num_virtual_pins) {
         pin = virtual_pins[pin_index];
     } else
-        return 0;
+        return 2;
 
     switch(msg_type) {
         case COMMAND_SET_PIN_MODE: {
             if (msg_len != 3)
-                return 0;
+                return 3;
             if (!pin) {
                 if (pin_type == PIN_TYPE_DIGITAL) {
                     digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
                 } else if (pin_type == PIN_TYPE_ANALOG) {
                     analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
                 } else
-                    return 0;
+                    return 4;
             } else
                 pin->setMode(command_buffer[2]);
             break;
         }
         case COMMAND_SET_VIRTUAL_PIN_MODE: {
             if (msg_len < 3)
-                return 0;
+                return 3;
 
             if (pin)
                 delete pin;
 
             pin = virtual_pins[pin_index] = create_virtual_pin(command_buffer[2], msg_len-3, &command_buffer[3]);
             if (!pin)
-                return 0;
+                return 4;
 
             break;
         }
         case COMMAND_SET_PIN_OUTPUT: {
-            if (msg_len != 3 || !pin)
-                return 0;
+            if (msg_len != 3 || !pin) {
+                return 3;
+            }
             pin->setOutput(command_buffer[2]);
             break;
         }
         case COMMAND_READ_PIN_INPUT: {
             if (msg_len != 2 || !pin)
-                return 0;
+                return 3;
             pin->markForReading();
             break;
         }
         case COMMAND_REGISTER_PIN_LISTENER: {
             if (msg_len != 6 || !pin)
-                return 0;
+                return 3;
             unsigned long byte1 = (unsigned long)command_buffer[2] & 0xFF;
             unsigned long byte2 = (unsigned long)command_buffer[3] & 0xFF;
             unsigned long byte3 = (unsigned long)command_buffer[4] & 0xFF;
@@ -175,10 +176,10 @@ uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
             break;
         }
         default:
-            return 0;
+            return 5;
     }
 
-    return 1;
+    return 0;
 }
 
 void pin_states_update(unsigned long cur_time) {

@@ -101,6 +101,7 @@ void serial_update(unsigned long cur_time) {
         char msg_type = read_buffer_at(0);
         char msg_len = read_buffer_at(1);
         if (rb_size >= 2 + msg_len) {
+            printf("%d %d\n", msg_type, msg_len);
             read_buffer_consume(2);
             for (int i = 0; i < msg_len; i++)
                 command_buffer[i] = read_buffer_consume();
@@ -114,8 +115,9 @@ void serial_update(unsigned long cur_time) {
                 if (!is_valid)
                     serial_is_synced(0);
             } else {
-                if (!on_command(msg_type, msg_len, &command_buffer[0]))
+                if (on_command(msg_type, msg_len, &command_buffer[0]) != 0) {
                     serial_is_synced(0);
+                }
             }
         } else
             break;
