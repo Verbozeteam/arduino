@@ -128,6 +128,7 @@ ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out
             break;
         }
     }
+    pinMode(out_port, OUTPUT);
     ISREngine::initialize(frequency, sync_port);
 }
 
