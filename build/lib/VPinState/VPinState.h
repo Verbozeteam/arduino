@@ -19,9 +19,10 @@
 #define PIN_TYPE_ANALOG     1
 #define PIN_TYPE_VIRTUAL    2
 
-#define PIN_MODE_INPUT  0
-#define PIN_MODE_OUTPUT 1
-#define PIN_MODE_PWM    2
+#define PIN_MODE_INPUT        0
+#define PIN_MODE_OUTPUT       1
+#define PIN_MODE_PWM          2
+#define PIN_MODE_INPUT_PULLUP 3
 
 #define VIRTUAL_PIN_TYPE_CENTRAL_AC 0
 #define VIRTUAL_PIN_TYPE_ISR_LIGHT  1

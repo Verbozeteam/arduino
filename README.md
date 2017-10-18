@@ -23,7 +23,7 @@ All communication happens by sending messages in the following format: `[code (1
 ### Code 1: Set pin mode (NON VIRTUAL PINS) `[1][3][pin_type][pin_index][mode]`
 - pin_type: 0 for digital pin, 1 for analog pin, 2 for virtual pin
 - pin_index: Index of the pin
-- mode: If this pin is NOT virtual: 0 (input), 1 (output) or 2 (PWM output)
+- mode: If this pin is NOT virtual: 0 (input), 1 (output), 2 (PWM output) or 3 (input with pullup resistor)
 
 ### Code 2: Set VIRTUAL pin mode `[2][length][2][pin_index][virtual_pin_type][<pin-specific>]`
 - length: Length of the following bytes (pin-specific)

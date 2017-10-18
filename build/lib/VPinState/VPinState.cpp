@@ -31,7 +31,12 @@ void PinState::update(unsigned long cur_time) {
 
 void PinState::setMode(uchar mode) {
     m_mode = mode;
-    pinMode(m_index, m_mode);
+    if (m_mode == PIN_MODE_INPUT)
+        pinMode(m_index, INPUT);
+    else if (m_mode == PIN_MODE_OUTPUT || m_mode == PIN_MODE_PWM)
+        pinMode(m_index, OUTPUT);
+    else if (m_mode == PIN_MODE_INPUT_PULLUP)
+        pinMode(m_index, INPUT_PULLUP);
 }
 
 void PinState::markForReading() {
