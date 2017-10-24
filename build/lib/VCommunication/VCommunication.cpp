@@ -101,7 +101,9 @@ void serial_update(unsigned long cur_time) {
         char msg_type = read_buffer_at(0);
         char msg_len = read_buffer_at(1);
         if (rb_size >= 2 + msg_len) {
+#ifdef __SHAMMAM_SIMULATION__
             printf("%d %d\n", msg_type, msg_len);
+#endif
             read_buffer_consume(2);
             for (int i = 0; i < msg_len; i++)
                 command_buffer[i] = read_buffer_consume();
