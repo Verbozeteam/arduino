@@ -74,6 +74,9 @@ int ISREngine::m_sync_wavelength = -1;
 int ISREngine::m_clock_tick = 0;
 
 void ISREngine::timer_interrupt() {
+    if (m_clock_tick > 100)
+        return;
+
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         if (m_clock_tick == 0)
             m_light_intensities_copies[i] = m_light_intensities[i];
@@ -126,7 +129,7 @@ void ISREngine::reset() {
 
 ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out_port) {
     m_my_index = 0;
-    m_target_pwm_value = 0;
+    m_target_pwm_value = 100; // this is the 0, not 0
     m_next_report = 0;
 
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
