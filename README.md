@@ -50,7 +50,7 @@ The reading will be returned via a message (code 0) sent by the arduino
 Makes the Arduino report the pin's reading every interval
 - pin_type: 0 for digital pin, 1 for analog pin, 2 for virtual pin
 - pin_index: Index of the pin
-- interval: interval (in ms) at which the Arduino reads the pin (-1 means don't read)
+- interval: interval (in ms) at which the Arduino reads the pin (-1 means don't read, 0 means no interval but report on-change)
 
 ### Code 6: Reset board state `[6][0]`
 Resets all pin states
