@@ -67,6 +67,7 @@ uchar CentralACPinState::readInput() {
 
 int ISREngine::m_light_ports[MAX_ISR_LIGHTS];
 int ISREngine::m_light_intensities[MAX_ISR_LIGHTS];
+int ISREngine::m_light_intensities_copies[MAX_ISR_LIGHTS];
 int ISREngine::m_sync_port = -1;
 int ISREngine::m_sync_full_period = -1;
 int ISREngine::m_sync_wavelength = -1;
@@ -74,8 +75,13 @@ int ISREngine::m_clock_tick = 0;
 
 void ISREngine::timer_interrupt() {
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
+        if (m_clock_tick == 0)
+            m_light_intensities_copies[i] = m_light_intensities[i];
+    }
+
+    for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         int port = m_light_ports[i];
-        int intensity = m_light_intensities[i];
+        int intensity = m_light_intensities_copies[i];
         if (port != -1 && intensity == m_clock_tick) {
             digitalWrite(port, HIGH);
             delayMicroseconds(m_sync_wavelength);
