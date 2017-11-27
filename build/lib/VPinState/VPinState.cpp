@@ -41,7 +41,7 @@ void PinState::update(unsigned long cur_time) {
         }
     } else if (m_mode == PIN_MODE_PWM_SMOOTH) {
         if (cur_time >= m_next_report && m_target_pwm_value != m_last_reading_sent) {
-            m_next_report = cur_time + 50;
+            m_next_report = cur_time + 10;
             if (m_target_pwm_value > m_last_reading_sent)
                 m_last_reading_sent++;
             else
