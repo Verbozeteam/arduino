@@ -135,7 +135,7 @@ ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         if (ISREngine::m_light_ports[i] == -1) {
             m_my_index = i;
-            ISREngine::m_light_intensities[i] = 0;
+            ISREngine::m_light_intensities[i] = 100;
             ISREngine::m_light_ports[i] = out_port;
             break;
         }
@@ -146,11 +146,13 @@ ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out
 
 void ISRLightsPinState::setOutput(uchar output) {
     m_target_pwm_value = output;
+    printf("ISRLightsPinState::setOutput(%d)\n", output);
     //ISREngine::m_light_intensities[m_my_index] = output;
 }
 
 void ISRLightsPinState::update(unsigned long cur_time) {
     if (cur_time >= m_next_report && m_target_pwm_value != ISREngine::m_light_intensities[m_my_index] && ISREngine::m_light_intensities[m_my_index] != -1) {
+        printf("%d going to %d\n", ISREngine::m_light_intensities[m_my_index], m_target_pwm_value);
         m_next_report = cur_time + 10;
         if (m_target_pwm_value > ISREngine::m_light_intensities[m_my_index])
             ISREngine::m_light_intensities[m_my_index]++;
