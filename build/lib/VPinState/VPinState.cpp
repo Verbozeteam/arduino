@@ -17,6 +17,7 @@ PinState::PinState(uchar index, uchar mode, uchar type) : m_index(index), m_mode
     m_read_interval = -1;
     m_last_reading_sent = 3;
     m_is_first_send = 1;
+    m_target_pwm_value = 0;
 }
 
 void PinState::update(unsigned long cur_time) {
@@ -38,6 +39,15 @@ void PinState::update(unsigned long cur_time) {
             char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
             send_serial_command(COMMAND_PIN_READING, 3, cmd);
         }
+    } else if (m_mode == PIN_MODE_PWM_SMOOTH) {
+        if (cur_time >= m_next_report && m_target_pwm_value != m_last_reading_sent) {
+            m_next_report = cur_time + 50;
+            if (m_target_pwm_value > m_last_reading_sent)
+                m_last_reading_sent++;
+            else
+                m_last_reading_sent--;
+            analogWrite(m_index, m_last_reading_sent);
+        }
     }
 }
 
@@ -45,9 +55,14 @@ void PinState::setMode(uchar mode) {
     m_mode = mode;
     if (m_mode == PIN_MODE_INPUT)
         pinMode(m_index, INPUT);
-    else if (m_mode == PIN_MODE_OUTPUT || m_mode == PIN_MODE_PWM)
+    else if (m_mode == PIN_MODE_OUTPUT || m_mode == PIN_MODE_PWM || m_mode == PIN_MODE_PWM_SMOOTH) {
         pinMode(m_index, OUTPUT);
-    else if (m_mode == PIN_MODE_INPUT_PULLUP)
+        if (m_mode == PIN_MODE_PWM_SMOOTH) {
+            m_last_reading_sent = 0;
+            m_next_report = 0;
+            analogWrite(m_index, 0);
+        }
+    } else if (m_mode == PIN_MODE_INPUT_PULLUP)
         pinMode(m_index, INPUT_PULLUP);
 }
 
@@ -68,6 +83,10 @@ void DigitalPinState::setOutput(uchar output) {
         digitalWrite(m_index, output);
     else if (m_mode == PIN_MODE_PWM)
         analogWrite(m_index, output);
+    else if (m_mode == PIN_MODE_PWM_SMOOTH) {
+        m_next_report = 0;
+        m_target_pwm_value = output;
+    }
 }
 
 uchar DigitalPinState::readInput() {

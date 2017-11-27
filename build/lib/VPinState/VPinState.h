@@ -23,6 +23,7 @@
 #define PIN_MODE_OUTPUT       1
 #define PIN_MODE_PWM          2
 #define PIN_MODE_INPUT_PULLUP 3
+#define PIN_MODE_PWM_SMOOTH   4
 
 #define VIRTUAL_PIN_TYPE_CENTRAL_AC 0
 #define VIRTUAL_PIN_TYPE_ISR_LIGHT  1
@@ -32,12 +33,13 @@
 
 class PinState {
 protected:
-    uchar m_index;
-    uchar m_mode;
-    uchar m_type;
-    uchar m_last_reading_sent;
-    uchar m_is_first_send;
-    unsigned long m_next_report;
+    uchar m_index; // pin index on the Arduino board
+    uchar m_mode; // pin mode (input, output, ...)
+    uchar m_type; // pin type (analog, digital, ...)
+    uchar m_last_reading_sent; // last value sent to the controller. if mode is PWM_SMOOTH, this is used to indicate the last value written to the PWM
+    uchar m_is_first_send; // whether or not this is the first time to send (using on-change mode (m_read_interval=0))
+    uchar m_target_pwm_value; // target value while using mode PWM_SMOOTH
+    unsigned long m_next_report; // time to do the next sending. If mode is PWM_SMOOTH, this is the next time the PWM value moves towards target
     unsigned long m_read_interval; // interval (in ms) at which readings should happen
 
 public:

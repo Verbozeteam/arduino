@@ -80,6 +80,8 @@ class ISRLightsPinState : public PinState {
 public:
     ISRLightsPinState(uchar frequency, uchar sync_port, uchar out_port);
 
+    virtual void update(unsigned long cur_time);
+
     virtual void setOutput(uchar output);
 
     virtual uchar readInput();

@@ -133,7 +133,18 @@ ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out
 }
 
 void ISRLightsPinState::setOutput(uchar output) {
+    m_target_pwm_value = output;
     ISREngine::m_light_intensities[m_my_index] = output;
+}
+
+void ISRLightsPinState::update(unsigned long cur_time) {
+    if (cur_time >= m_next_report && m_target_pwm_value != ISREngine::m_light_intensities[m_my_index]) {
+        m_next_report = cur_time + 50;
+        if (m_target_pwm_value > ISREngine::m_light_intensities[m_my_index])
+            ISREngine::m_light_intensities[m_my_index]++;
+        else
+            ISREngine::m_light_intensities[m_my_index]--;
+    }
 }
 
 uchar ISRLightsPinState::readInput() {
