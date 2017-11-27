@@ -12,7 +12,7 @@ uchar num_analog_pins = 0;
 uchar num_virtual_pins = 0;
 
 PinState::PinState(uchar index, uchar mode, uchar type) : m_index(index), m_mode(mode), m_type(type) {
-    pinMode(index, mode);
+    setMode(mode);
     m_next_report = 0;
     m_read_interval = -1;
 }
