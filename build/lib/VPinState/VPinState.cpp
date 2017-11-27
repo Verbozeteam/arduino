@@ -15,17 +15,29 @@ PinState::PinState(uchar index, uchar mode, uchar type) : m_index(index), m_mode
     setMode(mode);
     m_next_report = 0;
     m_read_interval = -1;
+    m_last_reading_sent = 3;
+    m_is_first_send = 1;
 }
 
 void PinState::update(unsigned long cur_time) {
-    if ((m_mode == PIN_MODE_INPUT || m_mode == PIN_MODE_INPUT_PULLUP) && cur_time >= m_next_report) {
-        if (m_read_interval == -1)
-            m_next_report = -1;
-        else
-            m_next_report = cur_time + m_read_interval;
-        uchar reading = readInput();
-        char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
-        send_serial_command(COMMAND_PIN_READING, 3, cmd);
+    if (m_mode == PIN_MODE_INPUT || m_mode == PIN_MODE_INPUT_PULLUP) {
+        if (m_read_interval == 0) {
+            uchar reading = readInput();
+            if (reading != m_last_reading_sent || m_is_first_send) {
+                m_is_first_send = 0;
+                m_last_reading_sent = reading;
+                char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
+                send_serial_command(COMMAND_PIN_READING, 3, cmd);
+            }
+        } else if (cur_time >= m_next_report) {
+            if (m_read_interval == -1)
+                m_next_report = -1;
+            else
+                m_next_report = cur_time + m_read_interval;
+            uchar reading = readInput();
+            char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
+            send_serial_command(COMMAND_PIN_READING, 3, cmd);
+        }
     }
 }
 

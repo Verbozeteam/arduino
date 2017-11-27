@@ -35,6 +35,8 @@ protected:
     uchar m_index;
     uchar m_mode;
     uchar m_type;
+    uchar m_last_reading_sent;
+    uchar m_is_first_send;
     unsigned long m_next_report;
     unsigned long m_read_interval; // interval (in ms) at which readings should happen
 
