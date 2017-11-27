@@ -141,7 +141,7 @@ void ISRLightsPinState::setOutput(uchar output) {
 }
 
 void ISRLightsPinState::update(unsigned long cur_time) {
-    if (cur_time >= m_next_report && m_target_pwm_value != ISREngine::m_light_intensities[m_my_index]) {
+    if (cur_time >= m_next_report && m_target_pwm_value != ISREngine::m_light_intensities[m_my_index] && ISREngine::m_light_intensities[m_my_index] != -1) {
         m_next_report = cur_time + 10;
         if (m_target_pwm_value > ISREngine::m_light_intensities[m_my_index])
             ISREngine::m_light_intensities[m_my_index]++;
