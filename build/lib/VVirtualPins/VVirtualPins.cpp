@@ -67,34 +67,31 @@ uchar CentralACPinState::readInput() {
 
 int ISREngine::m_light_ports[MAX_ISR_LIGHTS];
 int ISREngine::m_light_intensities[MAX_ISR_LIGHTS];
-int ISREngine::m_light_intensities_locks[MAX_ISR_LIGHTS];
+int ISREngine::m_light_intensities_copies[MAX_ISR_LIGHTS];
 int ISREngine::m_sync_port = -1;
 int ISREngine::m_sync_full_period = -1;
 int ISREngine::m_sync_wavelength = -1;
 int ISREngine::m_clock_tick = 0;
 
 void ISREngine::timer_interrupt() {
-    if (m_clock_tick > 100)
-        return;
-
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         int port = m_light_ports[i];
-        int intensity = m_light_intensities[i];
-        if (port != -1 && intensity == m_clock_tick && !m_light_intensities_locks[i]) {
-            m_light_intensities_locks[i] = 1; // lock this channel
-
+        int intensity = m_light_intensities_copies[i];
+        if (port != -1 && intensity == m_clock_tick) {
             digitalWrite(port, HIGH);
             delayMicroseconds(m_sync_wavelength);
             digitalWrite(port, LOW);
         }
     }
+
     m_clock_tick++;
 }
 
 void ISREngine::zero_cross_interrupt() {
     m_clock_tick = 0;
+
     for (int i = 0; i < MAX_ISR_LIGHTS; i++)
-        m_light_intensities_locks[i] = 0;
+        m_light_intensities_copies[i] = m_light_intensities[i];
 }
 
 void ISREngine::initialize(int frequency, int sync_port) {
@@ -128,13 +125,13 @@ void ISREngine::reset() {
 
 ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out_port) {
     m_my_index = 0;
-    m_target_pwm_value = 100; // this is the 0, not 0
+    m_target_pwm_value = 105; // this is the 0, not 0
     m_next_report = 0;
 
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         if (ISREngine::m_light_ports[i] == -1) {
             m_my_index = i;
-            ISREngine::m_light_intensities[i] = 100;
+            ISREngine::m_light_intensities[i] = 105;
             ISREngine::m_light_ports[i] = out_port;
             break;
         }
@@ -144,17 +141,20 @@ ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out
 }
 
 void ISRLightsPinState::setOutput(uchar output) {
-    m_target_pwm_value = output;
-    //ISREngine::m_light_intensities[m_my_index] = output;
+    m_target_pwm_value = (int) (float)output * 1.2f;
 }
 
 void ISRLightsPinState::update(unsigned long cur_time) {
     if (cur_time >= m_next_report && m_target_pwm_value != ISREngine::m_light_intensities[m_my_index] && ISREngine::m_light_intensities[m_my_index] != -1) {
         m_next_report = cur_time + 10;
-        if (m_target_pwm_value > ISREngine::m_light_intensities[m_my_index])
+        if (ISREngine::m_light_intensities[m_my_index] > 95)
+            m_next_report += 30; // slower dimming at dim intensities
+
+        if (m_target_pwm_value > ISREngine::m_light_intensities[m_my_index]) {
             ISREngine::m_light_intensities[m_my_index]++;
-        else
+        } else {
             ISREngine::m_light_intensities[m_my_index]--;
+        }
     }
 }
 
