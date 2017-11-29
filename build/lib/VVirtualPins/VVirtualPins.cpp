@@ -67,7 +67,7 @@ uchar CentralACPinState::readInput() {
 
 int ISREngine::m_light_ports[MAX_ISR_LIGHTS];
 int ISREngine::m_light_intensities[MAX_ISR_LIGHTS];
-int ISREngine::m_light_intensities_copies[MAX_ISR_LIGHTS];
+int ISREngine::m_light_intensities_locks[MAX_ISR_LIGHTS];
 int ISREngine::m_sync_port = -1;
 int ISREngine::m_sync_full_period = -1;
 int ISREngine::m_sync_wavelength = -1;
@@ -78,14 +78,11 @@ void ISREngine::timer_interrupt() {
         return;
 
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
-        if (m_clock_tick == 0)
-            m_light_intensities_copies[i] = m_light_intensities[i];
-    }
-
-    for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         int port = m_light_ports[i];
         int intensity = m_light_intensities_copies[i];
-        if (port != -1 && intensity == m_clock_tick) {
+        if (port != -1 && intensity == m_clock_tick && !m_light_intensities_locks[i]) {
+            m_light_intensities_locks[i] = 1; // lock this channel
+
             digitalWrite(port, HIGH);
             delayMicroseconds(m_sync_wavelength);
             digitalWrite(port, LOW);
@@ -95,7 +92,9 @@ void ISREngine::timer_interrupt() {
 }
 
 void ISREngine::zero_cross_interrupt() {
-    m_clock_tick=0;
+    m_clock_tick = 0;
+    for (int i = 0; i < MAX_ISR_LIGHTS; i++)
+        m_light_intensities_locks[i] = 0;
 }
 
 void ISREngine::initialize(int frequency, int sync_port) {
