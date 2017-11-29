@@ -37,7 +37,7 @@ friend class ISRLightsPinState;
 friend class CustomArduinoService;
     static int m_light_ports[MAX_ISR_LIGHTS];
     static int m_light_intensities[MAX_ISR_LIGHTS];
-    static int m_light_intensities_copies[MAX_ISR_LIGHTS]; // used at the beginning of the interrupt cycle to prevent double signals
+    static int m_light_intensities_locks[MAX_ISR_LIGHTS]; // used to lock channels so they don't send signal twice in one round
 
     static int m_sync_port;
     static int m_sync_full_period;
