@@ -79,7 +79,7 @@ void ISREngine::timer_interrupt() {
 
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         int port = m_light_ports[i];
-        int intensity = m_light_intensities_copies[i];
+        int intensity = m_light_intensities[i];
         if (port != -1 && intensity == m_clock_tick && !m_light_intensities_locks[i]) {
             m_light_intensities_locks[i] = 1; // lock this channel
 
