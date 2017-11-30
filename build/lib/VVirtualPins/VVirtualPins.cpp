@@ -141,14 +141,14 @@ ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out
 }
 
 void ISRLightsPinState::setOutput(uchar output) {
-    m_target_pwm_value = (int) (float)output * 1.2f;
+    m_target_pwm_value = (int) (float)output * 1.05f;
 }
 
 void ISRLightsPinState::update(unsigned long cur_time) {
     if (cur_time >= m_next_report && m_target_pwm_value != ISREngine::m_light_intensities[m_my_index] && ISREngine::m_light_intensities[m_my_index] != -1) {
         m_next_report = cur_time + 10;
-        if (ISREngine::m_light_intensities[m_my_index] > 95)
-            m_next_report += 30; // slower dimming at dim intensities
+        if (ISREngine::m_light_intensities[m_my_index] > 90)
+            m_next_report += 15; // slower dimming at dim intensities
 
         if (m_target_pwm_value > ISREngine::m_light_intensities[m_my_index]) {
             ISREngine::m_light_intensities[m_my_index]++;
