@@ -26,7 +26,7 @@ unsigned long TemperatureEngine::m_next_read;
 void TemperatureEngine::initialize(uchar one_wire_pin) {
     m_one_wire = OneWire(one_wire_pin);
     m_sensors = DallasTemperature(&m_one_wire);
-    m_sensors.begin();
+    // m_sensors.begin(); <--- this causes issues with Serial port overflowing ???????
     discoverOneWireDevices();
     m_cur_temp = 25.0f;
     m_next_read = 0;
