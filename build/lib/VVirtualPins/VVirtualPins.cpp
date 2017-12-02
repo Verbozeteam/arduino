@@ -132,6 +132,7 @@ ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out
         if (ISREngine::m_light_ports[i] == -1) {
             m_my_index = i;
             ISREngine::m_light_intensities[i] = 105;
+            ISREngine::m_light_intensities_copies[i] = 105;
             ISREngine::m_light_ports[i] = out_port;
             break;
         }
