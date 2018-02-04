@@ -12,7 +12,7 @@ AnalogPinState* analog_pins[NUM_ANALOG_PINS] = { NULL };
 PinState* virtual_pins[NUM_VIRTUAL_PINS] = { NULL };
 
 void setup() {
-    serial_init(&Serial);
+    communication_init(&Serial);
 
     TemperatureEngine::initialize(ONE_WIRE_PIN);
     ISREngine::reset();
@@ -23,7 +23,7 @@ void setup() {
 void loop() {
     unsigned long cur_time = millis();
 
-    serial_update(cur_time);
+    communication_update(cur_time);
 
     TemperatureEngine::update(cur_time);
 

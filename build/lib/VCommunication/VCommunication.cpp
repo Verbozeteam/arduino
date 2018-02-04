@@ -18,12 +18,12 @@ int full_sync = 0;
 
 HardwareSerial* SerialRef = NULL;
 
-void serial_init(HardwareSerial* serial) {
+void communication_init(HardwareSerial* serial) {
     SerialRef = serial;
     SerialRef->begin(9600);
 }
 
-uchar serial_is_synced(int set_to) {
+uchar communication_is_synced(int set_to) {
     if (set_to != -1) {
         half_sync = set_to;
         full_sync = set_to;
@@ -37,7 +37,7 @@ uchar serial_is_synced(int set_to) {
     return full_sync == 1;
 }
 
-void serial_update(unsigned long cur_time) {
+void communication_update(unsigned long cur_time) {
     int num_bytes = SerialRef->available();
     while (num_bytes > 0 && !read_buffer_full()) {
         read_buffer_append(SerialRef->read());
@@ -81,7 +81,7 @@ void serial_update(unsigned long cur_time) {
                 read_buffer_consume(sync_start+SYNC_SEQUENCE_LEN);
                 if (found_full) {
                     sync_send_timer = 0;
-                    serial_is_synced(1);
+                    communication_is_synced(1);
                 }
                 else
                     half_sync = 1;
@@ -115,10 +115,10 @@ void serial_update(unsigned long cur_time) {
                     if (command_buffer[i-2] != FULL_SYNC_SEQUENCE[i])
                         is_valid = 0;
                 if (!is_valid)
-                    serial_is_synced(0);
+                    communication_is_synced(0);
             } else {
                 if (on_command(msg_type, msg_len, &command_buffer[0]) != 0) {
-                    serial_is_synced(0);
+                    communication_is_synced(0);
                 }
             }
         } else
@@ -130,7 +130,7 @@ void serial_update(unsigned long cur_time) {
     // digitalWrite(44, full_sync ? HIGH : LOW);
 }
 
-void send_serial_command(uchar type, uchar len, char* cmd) {
+void communication_send_command(uchar type, uchar len, char* cmd) {
     SerialRef->write(type);
     SerialRef->write(len);
     for (int i = 0; i < len; i++)

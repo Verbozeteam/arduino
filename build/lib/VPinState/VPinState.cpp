@@ -28,7 +28,7 @@ void PinState::update(unsigned long cur_time) {
                 m_is_first_send = 0;
                 m_last_reading_sent = reading;
                 char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
-                send_serial_command(COMMAND_PIN_READING, 3, cmd);
+                communication_send_command(COMMAND_PIN_READING, 3, cmd);
             }
         } else if (cur_time >= m_next_report) {
             if (m_read_interval == -1)
@@ -37,7 +37,7 @@ void PinState::update(unsigned long cur_time) {
                 m_next_report = cur_time + m_read_interval;
             uchar reading = readInput();
             char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
-            send_serial_command(COMMAND_PIN_READING, 3, cmd);
+            communication_send_command(COMMAND_PIN_READING, 3, cmd);
         }
     } else if (m_mode == PIN_MODE_PWM_SMOOTH) {
         if (cur_time >= m_next_report && m_target_pwm_value != m_last_reading_sent) {
@@ -219,7 +219,7 @@ uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer) {
 }
 
 void pin_states_update(unsigned long cur_time) {
-    if (serial_is_synced()) {
+    if (communication_is_synced()) {
         for (int i = 0; i < num_digital_pins; i++)
             if (digital_pins[i])
                 digital_pins[i]->update(cur_time);
