@@ -1,13 +1,26 @@
 #pragma once
 
-void read_buffer_append(char b);
+#include <Arduino.h>
 
-char read_buffer_consume(int len = 1);
+#define BUFFER_SIZE 2048
 
-int read_buffer_full();
+class VBuffer {
+    char m_buffer[BUFFER_SIZE];
+    int m_start = 0;
+    int m_end = 0;
 
-int read_buffer_empty();
+public:
+    VBuffer() : m_start(0), m_end(0) {};
 
-int read_buffer_size();
+    void append(char b);
 
-char read_buffer_at(int index);
+    char consume(int len = 1);
+
+    int full();
+
+    int empty();
+
+    int size();
+
+    char at(int index);
+};

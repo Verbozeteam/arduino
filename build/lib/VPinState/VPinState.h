@@ -1,8 +1,6 @@
 #pragma once
 
-#ifndef uchar
-#define uchar unsigned char
-#endif
+#include <Arduino.h>
 
 // Messages sent by the Arduino
 #define COMMAND_PIN_READING             0
@@ -33,50 +31,50 @@
 
 class PinState {
 protected:
-    uchar m_index; // pin index on the Arduino board
-    uchar m_mode; // pin mode (input, output, ...)
-    uchar m_type; // pin type (analog, digital, ...)
-    uchar m_last_reading_sent; // last value sent to the controller. if mode is PWM_SMOOTH, this is used to indicate the last value written to the PWM
-    uchar m_is_first_send; // whether or not this is the first time to send (using on-change mode (m_read_interval=0))
-    uchar m_target_pwm_value; // target value while using mode PWM_SMOOTH
+    uint8_t m_index; // pin index on the Arduino board
+    uint8_t m_mode; // pin mode (input, output, ...)
+    uint8_t m_type; // pin type (analog, digital, ...)
+    uint8_t m_last_reading_sent; // last value sent to the controller. if mode is PWM_SMOOTH, this is used to indicate the last value written to the PWM
+    uint8_t m_is_first_send; // whether or not this is the first time to send (using on-change mode (m_read_interval=0))
+    uint8_t m_target_pwm_value; // target value while using mode PWM_SMOOTH
     unsigned long m_next_report; // time to do the next sending. If mode is PWM_SMOOTH, this is the next time the PWM value moves towards target
     unsigned long m_read_interval; // interval (in ms) at which readings should happen
 
 public:
-    PinState(uchar index = 0, uchar mode = PIN_MODE_OUTPUT, uchar type = PIN_TYPE_DIGITAL);
+    PinState(uint8_t index = 0, uint8_t mode = PIN_MODE_OUTPUT, uint8_t type = PIN_TYPE_DIGITAL);
     virtual ~PinState() {}
 
     virtual void update(unsigned long cur_time);
 
-    virtual void setMode(uchar mode);
+    virtual void setMode(uint8_t mode);
 
     virtual void markForReading();
 
     virtual void setReadingInterval(unsigned long interval);
 
-    virtual void setOutput(uchar output) = 0;
+    virtual void setOutput(uint8_t output) = 0;
 
-    virtual uchar readInput() = 0;
+    virtual uint8_t readInput() = 0;
 };
 
 class DigitalPinState : public PinState {
 public:
-    DigitalPinState(uchar index = 0, uchar mode = PIN_MODE_OUTPUT);
+    DigitalPinState(uint8_t index = 0, uint8_t mode = PIN_MODE_OUTPUT);
 
-    virtual void setOutput(uchar output);
+    virtual void setOutput(uint8_t output);
 
-    virtual uchar readInput();
+    virtual uint8_t readInput();
 };
 
 class AnalogPinState : public PinState {
 public:
-    AnalogPinState(uchar index = 0, uchar mode = PIN_MODE_INPUT);
+    AnalogPinState(uint8_t index = 0, uint8_t mode = PIN_MODE_INPUT);
 
-    virtual void setOutput(uchar output);
+    virtual void setOutput(uint8_t output);
 
-    virtual uchar readInput();
+    virtual uint8_t readInput();
 };
 
-void init_pin_states(uchar num_digital, uchar num_analog, uchar num_virtual);
-uchar on_command(uchar msg_type, uchar msg_len, char* command_buffer);
+void init_pin_states(uint8_t num_digital, uint8_t num_analog, uint8_t num_virtual);
+uint8_t pin_states_on_command(uint8_t msg_type, uint8_t msg_len, char* command_buffer);
 void pin_states_update(unsigned long cur_time);

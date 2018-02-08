@@ -1,6 +1,8 @@
 #pragma once
 
-#include <VPinState.h>
+#include <Arduino.h>
+
+#include "VPinState.h"
 
 #include <SPI.h>
 #include <OneWire.h>
@@ -12,14 +14,14 @@
 
 #define MAX_ISR_LIGHTS 8
 
-PinState* create_virtual_pin(uchar type, uchar data_len, char* data);
+PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data);
 
 class TemperatureEngine {
     friend class CentralACPinState;
 
     static OneWire m_one_wire;
     static DallasTemperature m_sensors;
-    static uchar m_num_sensors;
+    static uint8_t m_num_sensors;
     static float m_cur_temp;
     static unsigned long m_next_read;
 
@@ -27,7 +29,7 @@ class TemperatureEngine {
 
 public:
 
-    static void initialize(uchar one_wire_pin);
+    static void initialize(uint8_t one_wire_pin);
 
     static void update(unsigned long cur_time);
 };
@@ -72,11 +74,11 @@ public:
  */
 class CentralACPinState : public PinState {
 public:
-    CentralACPinState(uchar temp_index);
+    CentralACPinState(uint8_t temp_index);
 
-    virtual void setOutput(uchar output);
+    virtual void setOutput(uint8_t output);
 
-    virtual uchar readInput();
+    virtual uint8_t readInput();
 };
 
 /**
@@ -86,12 +88,12 @@ class ISRLightsPinState : public PinState {
     int m_my_index;
 
 public:
-    ISRLightsPinState(uchar frequency, uchar sync_port, uchar out_port);
+    ISRLightsPinState(uint8_t frequency, uint8_t sync_port, uint8_t out_port);
 
     virtual void update(unsigned long cur_time);
 
-    virtual void setOutput(uchar output);
+    virtual void setOutput(uint8_t output);
 
-    virtual uchar readInput();
+    virtual uint8_t readInput();
 };
 

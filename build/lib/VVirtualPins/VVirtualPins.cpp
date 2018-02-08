@@ -1,6 +1,6 @@
-#include <VVirtualPins.h>
+#include "VVirtualPins.h"
 
-PinState* create_virtual_pin(uchar type, uchar data_len, char* data) {
+PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data) {
     switch (type) {
         case VIRTUAL_PIN_CENTRAL_AC: {
             if (data_len != 1)
@@ -19,11 +19,11 @@ PinState* create_virtual_pin(uchar type, uchar data_len, char* data) {
 
 OneWire TemperatureEngine::m_one_wire(53);
 DallasTemperature TemperatureEngine::m_sensors;
-uchar TemperatureEngine::m_num_sensors;
+uint8_t TemperatureEngine::m_num_sensors;
 float TemperatureEngine::m_cur_temp;
 unsigned long TemperatureEngine::m_next_read;
 
-void TemperatureEngine::initialize(uchar one_wire_pin) {
+void TemperatureEngine::initialize(uint8_t one_wire_pin) {
     m_one_wire = OneWire(one_wire_pin);
     m_sensors = DallasTemperature(&m_one_wire);
     // m_sensors.begin(); <--- this causes issues with Serial port overflowing ???????
@@ -34,7 +34,7 @@ void TemperatureEngine::initialize(uchar one_wire_pin) {
 
 void TemperatureEngine::discoverOneWireDevices() {
     m_num_sensors = 0;
-    uchar addr[8];
+    uint8_t addr[8];
     while (m_one_wire.search(addr))
         m_num_sensors++;
     m_one_wire.reset_search();
@@ -48,17 +48,17 @@ void TemperatureEngine::update(unsigned long cur_time) {
 }
 
 
-CentralACPinState::CentralACPinState(uchar temp_index)
+CentralACPinState::CentralACPinState(uint8_t temp_index)
     : PinState(temp_index, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL)
 {
 }
 
-void CentralACPinState::setOutput(uchar output) {
+void CentralACPinState::setOutput(uint8_t output) {
 }
 
-uchar CentralACPinState::readInput() {
+uint8_t CentralACPinState::readInput() {
     float m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(m_index);
-    return (uchar)(m_cur_temp*4.0f);
+    return (uint8_t)(m_cur_temp*4.0f);
 }
 
 /**
@@ -123,7 +123,7 @@ void ISREngine::reset() {
     }
 }
 
-ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out_port) {
+ISRLightsPinState::ISRLightsPinState(uint8_t frequency, uint8_t sync_port, uint8_t out_port) {
     m_my_index = 0;
     m_target_pwm_value = 105; // this is the 0, not 0
     m_next_report = 0;
@@ -141,7 +141,7 @@ ISRLightsPinState::ISRLightsPinState(uchar frequency, uchar sync_port, uchar out
     ISREngine::initialize(frequency, sync_port);
 }
 
-void ISRLightsPinState::setOutput(uchar output) {
+void ISRLightsPinState::setOutput(uint8_t output) {
     m_target_pwm_value = (int) (float)output * 1.1f;
 }
 
@@ -159,6 +159,6 @@ void ISRLightsPinState::update(unsigned long cur_time) {
     }
 }
 
-uchar ISRLightsPinState::readInput() {
+uint8_t ISRLightsPinState::readInput() {
     return ISREngine::m_light_intensities[m_my_index];
 }

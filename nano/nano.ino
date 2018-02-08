@@ -1,23 +1,23 @@
-#include <VCommunication.h>
-#include <VPinState.h>
-#include <VVirtualPins.h>
+#include "VCommunication.h"
+#include "VPinState.h"
+#include "VVirtualPins.h"
 
-#define NUM_DIGITAL_PINS 14
-#define NUM_ANALOG_PINS 8
-#define NUM_VIRTUAL_PINS 8
-#define ONE_WIRE_PIN 2
+#define _NUM_DIGITAL_PINS 12
+#define _NUM_ANALOG_PINS 8
+#define _NUM_VIRTUAL_PINS 8
+#define ONE_WIRE_PIN A0
 
-DigitalPinState* digital_pins[NUM_DIGITAL_PINS] = { NULL };
-AnalogPinState* analog_pins[NUM_ANALOG_PINS] = { NULL };
-PinState* virtual_pins[NUM_VIRTUAL_PINS] = { NULL };
+DigitalPinState* digital_pins[_NUM_DIGITAL_PINS] = { NULL };
+AnalogPinState* analog_pins[_NUM_ANALOG_PINS] = { NULL };
+PinState* virtual_pins[_NUM_VIRTUAL_PINS] = { NULL };
 
 void setup() {
-    communication_init(&Serial);
+    communication_init(&Serial, pin_states_on_command, 0);
 
     TemperatureEngine::initialize(ONE_WIRE_PIN);
     ISREngine::reset();
 
-    init_pin_states(NUM_DIGITAL_PINS, NUM_ANALOG_PINS, NUM_VIRTUAL_PINS);
+    init_pin_states(_NUM_DIGITAL_PINS, _NUM_ANALOG_PINS, _NUM_VIRTUAL_PINS);
 }
 
 void loop() {
