@@ -33,7 +33,7 @@ void addSlave(int64_t addr) {
 
 void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, int16_t myAddr, int8_t channel, int16_t panId) {
     ZigbeeSerialRef = serial;
-    Serial1.begin(9600);
+    ZigbeeSerialRef->begin(9600);
     g_commandCallback = on_command;
 }
 
@@ -50,38 +50,17 @@ void zigbeeDiscover() {
     #endif
 }
 
-void zigbeeTx(int16_t addrTo, const char* data, uint8_t len) {
-    #if ZIGBEE_VERSION == 1
-        // simply forward the message (to whatever zigbee destination is)
-        ZigbeeSerialRef->write(data, len);
-    #elif ZIGBEE_VERSION == 2
-        // Create an API frame targeting addrTo and escape and stuff
-        char buf[100];
-        buf[0] = 0x01;
-        buf[1] = g_curFrameNumber++;
-        buf[2] = (addrTo >> 8) & 0xFF;
-        buf[3] = (addrTo     ) & 0xFF;
-        for (int i = 0; i < len; i++)
-            buf[4+i] = data[i];
-
-        if (g_curFrameNumber == 0)
-            g_curFrameNumber = 1;
-
-        zigbee2APICall(buf, len + 4);
-    #endif
-}
-
 uint8_t zigbeeChecksum(const char* data, uint8_t len) {
     uint8_t sum = 0;
     for (int i = 0; i < len; i++)
         sum += data[i];
-    return 0xFF - sum;
+    return (uint8_t)((int)0xFF - (int)sum);
 }
 
 void zigbeeEscapeAndSend(uint8_t b) {
     if (b == 0x7E || b == 0x7D || b == 0x11 || b == 0x13) {
         ZigbeeSerialRef->write(0x7D);
-        ZigbeeSerialRef->write(b | 0x20);
+        ZigbeeSerialRef->write(b ^ 0x20);
     } else
         ZigbeeSerialRef->write(b);
 }
@@ -97,6 +76,28 @@ void zigbeeAPICall(const char* cmd, uint8_t len) {
     for (int i = 0; i < len; i++)
         zigbeeEscapeAndSend(cmd[i]);
     zigbeeEscapeAndSend(checksum);
+}
+
+void zigbeeTx(int16_t addrTo, const char* data, uint8_t len) {
+    #if ZIGBEE_VERSION == 1
+        // simply forward the message (to whatever zigbee destination is)
+        for (int i = 0; i < len; i++)
+            ZigbeeSerialRef->write(data[i]);
+    #elif ZIGBEE_VERSION == 2
+        // Create an API frame targeting addrTo and escape and stuff
+        char buf[100];
+        buf[0] = 0x01;
+        buf[1] = g_curFrameNumber++;
+        buf[2] = (addrTo >> 8) & 0xFF;
+        buf[3] = (addrTo     ) & 0xFF;
+        for (int i = 0; i < len; i++)
+            buf[4+i] = data[i];
+
+        if (g_curFrameNumber == 0)
+            g_curFrameNumber = 1;
+
+        zigbeeAPICall(buf, len + 4);
+    #endif
 }
 
 void zigbeeUpdate(unsigned long curTime) {

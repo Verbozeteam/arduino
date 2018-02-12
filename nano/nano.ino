@@ -5,14 +5,14 @@
 #define _NUM_DIGITAL_PINS 12
 #define _NUM_ANALOG_PINS 8
 #define _NUM_VIRTUAL_PINS 8
-#define ONE_WIRE_PIN A0
+#define ONE_WIRE_PIN 13
 
 DigitalPinState* digital_pins[_NUM_DIGITAL_PINS] = { NULL };
 AnalogPinState* analog_pins[_NUM_ANALOG_PINS] = { NULL };
 PinState* virtual_pins[_NUM_VIRTUAL_PINS] = { NULL };
 
 void setup() {
-    communication_init(&Serial, pin_states_on_command, 0);
+    communication_init(&Serial, pin_states_on_command);
 
     TemperatureEngine::initialize(ONE_WIRE_PIN);
     ISREngine::reset();

@@ -88,11 +88,17 @@ void communication_update(unsigned long cur_time) {
                 int found_full = g_read_buffer.at(sync_start+2) == FULL_SYNC_SEQUENCE[2];
                 g_read_buffer.consume(sync_start+SYNC_SEQUENCE_LEN);
                 if (found_full) {
+                    #ifdef __SHAMMAM_SIMULATION__
+                        printf("Found full sync\n");
+                    #endif
                     sync_send_timer = 0;
                     communication_is_synced(1);
-                }
-                else
+                } else {
+                    #ifdef __SHAMMAM_SIMULATION__
+                        printf("Found half sync\n");
+                    #endif
                     half_sync = 1;
+                }
             } else {
                 rb_size = g_read_buffer.size();
                 int truncate_size;
@@ -109,12 +115,15 @@ void communication_update(unsigned long cur_time) {
         char msg_type = g_read_buffer.at(0);
         char msg_len = g_read_buffer.at(1);
         if (rb_size >= 2 + msg_len) {
-#ifdef __SHAMMAM_SIMULATION__
-            printf("%d %d\n", msg_type, msg_len);
-#endif
             g_read_buffer.consume(2);
             for (int i = 0; i < msg_len; i++)
                 command_buffer[i] = g_read_buffer.consume();
+            #ifdef __SHAMMAM_SIMULATION__
+                printf(">> [0x%X 0x%X", msg_type & 0xFF, msg_len & 0xFF);
+                for (int x = 0; x < msg_len; x++)
+                    printf(" 0x%X", command_buffer[x] & 0xFF);
+                printf("]\n");
+            #endif
 
             // first check for sync sequence
             if (msg_type == SYNC_SEQUENCE[0]) {
@@ -122,10 +131,17 @@ void communication_update(unsigned long cur_time) {
                 for (int i = 2; i < SYNC_SEQUENCE_LEN && is_valid; i++)
                     if (command_buffer[i-2] != FULL_SYNC_SEQUENCE[i])
                         is_valid = 0;
-                if (!is_valid)
+                if (!is_valid) {
+                    #ifdef __SHAMMAM_SIMULATION__
+                        printf("INVALID SYNC SEQUENCE\n");
+                    #endif
                     communication_is_synced(0);
+                }
             } else {
                 if (on_command_cb(msg_type, msg_len, &command_buffer[0]) != 0) {
+                    #ifdef __SHAMMAM_SIMULATION__
+                        printf("INVALID COMMAND\n");
+                    #endif
                     communication_is_synced(0);
                 }
             }
@@ -133,9 +149,6 @@ void communication_update(unsigned long cur_time) {
             break;
         rb_size = g_read_buffer.size();
     }
-
-    // digitalWrite(45, half_sync ? HIGH : LOW);
-    // digitalWrite(44, full_sync ? HIGH : LOW);
 }
 
 void communication_send_command(uint8_t type, uint8_t len, char* cmd) {

@@ -4,9 +4,12 @@
 #include <HardwareSerial.h>
 
 #define MAX_NUM_SLAVES 40
-#define ZIGBEE_VERSION 1
+#define ZIGBEE_VERSION 2
 
 typedef void (*ZIGBEE_CALLBACK) (int16_t, char*, uint8_t);
+
+
+void zigbeeAPICall(const char* cmd, uint8_t len);
 
 void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, int16_t myAddr, int8_t channel, int16_t panId);
 void zigbeeDiscover();
