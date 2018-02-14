@@ -52,6 +52,9 @@ void PinState::update(unsigned long cur_time) {
 }
 
 void PinState::setMode(uint8_t mode) {
+    #ifdef __SHAMMAM_SIMULATION__
+        printf("PIN MODE [%d] -> %d\n", m_index, mode);
+    #endif
     m_mode = mode;
     if (m_mode == PIN_MODE_INPUT)
         pinMode(m_index, INPUT);
