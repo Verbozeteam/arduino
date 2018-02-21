@@ -31,10 +31,28 @@ void addSlave(int64_t addr) {
     }
 }
 
-void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, int16_t myAddr, int8_t channel, int16_t panId) {
+void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, const char* myAddr, const char* channel, const char* panId) {
     ZigbeeSerialRef = serial;
-    ZigbeeSerialRef->begin(9600);
-    g_commandCallback = on_command;
+    if (on_command) {
+        ZigbeeSerialRef->begin(9600);
+        g_commandCallback = on_command;
+    }
+
+    // initialize the zigbee chip
+    delay(1100);
+    ZigbeeSerialRef->write("+++");
+    delay(1100);
+    ZigbeeSerialRef->write("ATMY ");
+    ZigbeeSerialRef->write(myAddr);
+    ZigbeeSerialRef->write("\r");
+    ZigbeeSerialRef->write("ATCH ");
+    ZigbeeSerialRef->write(channel);
+    ZigbeeSerialRef->write("\r");
+    ZigbeeSerialRef->write("ATID ");
+    ZigbeeSerialRef->write(panId);
+    ZigbeeSerialRef->write("\r");
+    ZigbeeSerialRef->write("ATAP 2\r");
+    ZigbeeSerialRef->write("ATCN\r");
 }
 
 void zigbeeDiscover() {

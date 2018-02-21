@@ -6,8 +6,8 @@
 
 class VBuffer {
     char m_buffer[BUFFER_SIZE];
-    int m_start = 0;
-    int m_end = 0;
+    int m_start;
+    int m_end;
 
 public:
     VBuffer() : m_start(0), m_end(0) {};
