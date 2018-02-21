@@ -51,7 +51,7 @@ void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, const char* 
     ZigbeeSerialRef->write("ATID ");
     ZigbeeSerialRef->write(panId);
     ZigbeeSerialRef->write("\r");
-    ZigbeeSerialRef->write("ATAP 2\r");
+    ZigbeeSerialRef->write("ATAP 0\r"); // transparent mode
     ZigbeeSerialRef->write("ATCN\r");
 }
 
