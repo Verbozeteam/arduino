@@ -31,7 +31,7 @@ void addSlave(int64_t addr) {
     }
 }
 
-void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, const char* myAddr, const char* channel, const char* panId) {
+void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, const char* panId) {
     ZigbeeSerialRef = serial;
     if (on_command) {
         ZigbeeSerialRef->begin(9600);
@@ -41,17 +41,18 @@ void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, const char* 
     // initialize the zigbee chip
     delay(1100);
     ZigbeeSerialRef->write("+++");
+    ZigbeeSerialRef->flush();
     delay(1100);
-    ZigbeeSerialRef->write("ATMY ");
-    ZigbeeSerialRef->write(myAddr);
-    ZigbeeSerialRef->write("\r");
-    ZigbeeSerialRef->write("ATCH ");
-    ZigbeeSerialRef->write(channel);
-    ZigbeeSerialRef->write("\r");
-    ZigbeeSerialRef->write("ATID ");
+    ZigbeeSerialRef->write("ATCE 0\r"); // not a coordinator
+    ZigbeeSerialRef->write("ATAP 0\r"); // transparent mode
+    ZigbeeSerialRef->write("ATEE 0\r"); // disable security (@TODO: CHANGE)
+    ZigbeeSerialRef->write("ATJV 0\r"); // ???
+    ZigbeeSerialRef->write("ATDH 0\r"); // destination 0 is coordinator
+    ZigbeeSerialRef->write("ATDL 0\r"); // destination 0 is coordinator
+
+    ZigbeeSerialRef->write("ATID ");    // set panID
     ZigbeeSerialRef->write(panId);
     ZigbeeSerialRef->write("\r");
-    ZigbeeSerialRef->write("ATAP 0\r"); // transparent mode
     ZigbeeSerialRef->write("ATCN\r");
 }
 

@@ -11,7 +11,7 @@ typedef void (*ZIGBEE_CALLBACK) (int16_t, char*, uint8_t);
 
 void zigbeeAPICall(const char* cmd, uint8_t len);
 
-void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, const char* myAddr, const char* channel, const char* panId);
+void zigbeeInit(HardwareSerial* serial, ZIGBEE_CALLBACK on_command, const char* panId);
 void zigbeeDiscover();
 void zigbeeTx(int16_t addrTo, const char* data, uint8_t len);
 void zigbeeUpdate(unsigned long curTime);

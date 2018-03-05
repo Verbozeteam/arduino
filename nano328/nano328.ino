@@ -3,6 +3,8 @@
 #include "VVirtualPins.h"
 #include "VZigbee.h"
 
+#define PAN_ID "1234"
+
 #define _NUM_DIGITAL_PINS 12
 #define _NUM_ANALOG_PINS 8
 #define _NUM_VIRTUAL_PINS 8
@@ -16,7 +18,7 @@ void setup() {
     communication_init(&Serial, pin_states_on_command);
 
     // nanos connect to zigbees on the serial port!
-    zigbeeInit(&Serial, NULL, "2", "C", "3332");
+    zigbeeInit(&Serial, NULL, PAN_ID);
 
     TemperatureEngine::initialize(ONE_WIRE_PIN);
     ISREngine::reset();

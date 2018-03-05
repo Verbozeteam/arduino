@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-#define BUFFER_SIZE 2048
+#define BUFFER_SIZE 512
 
 class VBuffer {
     char m_buffer[BUFFER_SIZE];
