@@ -100,10 +100,11 @@ AnalogPinState::AnalogPinState(uint8_t index, uint8_t mode) : PinState(index, mo
 }
 
 void AnalogPinState::setOutput(uint8_t output) {
+    digitalWrite(A0 + m_index, output);
 }
 
 uint8_t AnalogPinState::readInput() {
-    return analogRead(m_index);
+    return analogRead(A0 + m_index);
 }
 
 void reset_board() {

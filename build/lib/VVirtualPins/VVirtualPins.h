@@ -9,10 +9,13 @@
 #include <DallasTemperature.h>
 #include <TimerOne.h>
 
-#define VIRTUAL_PIN_CENTRAL_AC 0
-#define VIRTUAL_PIN_ISR_LIGHT 1
+#define ONE_WIRE_PIN 53
 
-#define MAX_ISR_LIGHTS 8
+#define VIRTUAL_PIN_CENTRAL_AC 0
+#define VIRTUAL_PIN_ISR_LIGHT  1
+#define VIRTUAL_PIN_ISR_LIGHT2 2
+
+#define MAX_ISR_LIGHTS 16
 
 PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data);
 
@@ -36,11 +39,13 @@ public:
 
 class ISREngine {
 friend class ISRLightsPinState;
+friend class ISRLights2PinState;
 friend class CustomArduinoService;
     static int m_light_ports[MAX_ISR_LIGHTS];
     static int m_light_intensities[MAX_ISR_LIGHTS];
     static int m_light_target_clocks[MAX_ISR_LIGHTS]; // mapped to from m_light_intensities to make the curve linear
     static int m_light_intensities_copies[MAX_ISR_LIGHTS]; // used at the beginning of the interrupt cycle to prevent double signals
+    static bool m_light_only_wave[MAX_ISR_LIGHTS]; // true means a dimmer only needs a wave at the right time, false means it needs a constant HIGH until next zero crossing
 
     static int m_sync_port;
     static int m_sync_full_period;
@@ -82,9 +87,10 @@ public:
 };
 
 /**
- * ISR Lighting array virtual pin (only one pin is necessary)
+ * ISR Lighting array virtual pin (old dimmer: uses a pulse in the AC wave) (only one pin is necessary)
  */
 class ISRLightsPinState : public PinState {
+protected:
     int m_my_index;
 
 public:
@@ -95,5 +101,13 @@ public:
     virtual void setOutput(uint8_t output);
 
     virtual uint8_t readInput();
+};
+
+/**
+ * ISR Lighting array virtual pin (newer dimmer: doesn't use pulse, just turns on the wave) (only one pin is necessary)
+ */
+class ISRLights2PinState : public ISRLightsPinState {
+public:
+    ISRLights2PinState(uint8_t frequency, uint8_t sync_port, uint8_t out_port);
 };
 

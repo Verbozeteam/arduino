@@ -12,12 +12,17 @@ PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data) {
                 return NULL;
             return new ISRLightsPinState(data[0] & 0xFF, data[1] & 0xFF, data[2] & 0xFF);
         }
+        case VIRTUAL_PIN_ISR_LIGHT2: {
+            if (data_len != 3)
+                return NULL;
+            return new ISRLights2PinState(data[0] & 0xFF, data[1] & 0xFF, data[2] & 0xFF);
+        }
     }
 
     return NULL;
 }
 
-OneWire TemperatureEngine::m_one_wire(53);
+OneWire TemperatureEngine::m_one_wire(ONE_WIRE_PIN);
 DallasTemperature TemperatureEngine::m_sensors;
 uint8_t TemperatureEngine::m_num_sensors;
 float TemperatureEngine::m_cur_temp;
@@ -68,6 +73,7 @@ uint8_t CentralACPinState::readInput() {
 int ISREngine::m_light_ports[MAX_ISR_LIGHTS];
 int ISREngine::m_light_intensities[MAX_ISR_LIGHTS];
 int ISREngine::m_light_intensities_copies[MAX_ISR_LIGHTS];
+bool ISREngine::m_light_only_wave[MAX_ISR_LIGHTS];
 int ISREngine::m_sync_port = -1;
 int ISREngine::m_sync_full_period = -1;
 int ISREngine::m_sync_wavelength = -1;
@@ -79,8 +85,10 @@ void ISREngine::timer_interrupt() {
         int intensity = m_light_intensities_copies[i];
         if (port != -1 && intensity == m_clock_tick) {
             digitalWrite(port, HIGH);
-            delayMicroseconds(m_sync_wavelength);
-            digitalWrite(port, LOW);
+            if (m_light_only_wave[i]) {
+                delayMicroseconds(m_sync_wavelength);
+                digitalWrite(port, LOW);
+            }
         }
     }
 
@@ -90,8 +98,12 @@ void ISREngine::timer_interrupt() {
 void ISREngine::zero_cross_interrupt() {
     m_clock_tick = 0;
 
-    for (int i = 0; i < MAX_ISR_LIGHTS; i++)
+    for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
+        int port = m_light_ports[i];
         m_light_intensities_copies[i] = m_light_intensities[i];
+        if (m_light_only_wave[i] && port != -1)
+            digitalWrite(port, LOW);
+    }
 }
 
 void ISREngine::initialize(int frequency, int sync_port) {
@@ -134,6 +146,7 @@ ISRLightsPinState::ISRLightsPinState(uint8_t frequency, uint8_t sync_port, uint8
             ISREngine::m_light_intensities[i] = 105;
             ISREngine::m_light_intensities_copies[i] = 105;
             ISREngine::m_light_ports[i] = out_port;
+            ISREngine::m_light_only_wave[i] = true;
             break;
         }
     }
@@ -161,4 +174,10 @@ void ISRLightsPinState::update(unsigned long cur_time) {
 
 uint8_t ISRLightsPinState::readInput() {
     return ISREngine::m_light_intensities[m_my_index];
+}
+
+ISRLights2PinState::ISRLights2PinState(uint8_t frequency, uint8_t sync_port, uint8_t out_port)
+    : ISRLightsPinState(frequency, sync_port, out_port) {
+
+    ISREngine::m_light_only_wave[m_my_index] = false;
 }
