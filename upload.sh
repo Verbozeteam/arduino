@@ -3,12 +3,17 @@ if [ "$#" -lt 1 ] || ! [ -d "$1" ]; then
   exit 1
 fi
 
+board_name=$1
+shift
+
 rm -rf build/src/*
-cp $1/$1.ino build/src/
+cp $board_name/$board_name.ino build/src/
 
 cd build/
-ino build -m $1
-rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+ino build -m $board_name
+rc=$?
+if [ $rc != 0 ]; then
+  exit $rc
+fi
 
-ino upload -m $1 ${@:2}
-
+ino upload -m $board_name $@
