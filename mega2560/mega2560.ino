@@ -4,7 +4,7 @@
 
 #define _NUM_DIGITAL_PINS 53
 #define _NUM_ANALOG_PINS 16
-#define _NUM_VIRTUAL_PINS 8
+#define _NUM_VIRTUAL_PINS 16
 #define ONE_WIRE_PIN 53
 
 DigitalPinState* digital_pins[_NUM_DIGITAL_PINS] = { NULL };
