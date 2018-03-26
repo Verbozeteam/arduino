@@ -178,6 +178,5 @@ uint8_t ISRLightsPinState::readInput() {
 
 ISRLights2PinState::ISRLights2PinState(uint8_t frequency, uint8_t sync_port, uint8_t out_port)
     : ISRLightsPinState(frequency, sync_port, out_port) {
-
     ISREngine::m_light_only_wave[m_my_index] = false;
 }
