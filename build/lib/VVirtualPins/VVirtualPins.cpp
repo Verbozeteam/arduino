@@ -83,11 +83,16 @@ void ISREngine::timer_interrupt() {
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         int port = m_light_ports[i];
         int intensity = m_light_intensities_copies[i];
-        if (port != -1 && intensity == m_clock_tick) {
-            digitalWrite(port, HIGH);
-            if (m_light_only_wave[i]) {
+        if (m_light_only_wave) {
+            if (port != -1 && intensity == m_clock_tick) {
+                digitalWrite(port, HIGH);
                 delayMicroseconds(m_sync_wavelength);
                 digitalWrite(port, LOW);
+            }
+        } else {
+            if (port != -1 && m_clock_tick >= intensity) {
+                m_light_intensities_copies[i] = -1;
+                digitalWrite(port, HIGH);
             }
         }
     }
@@ -101,7 +106,7 @@ void ISREngine::zero_cross_interrupt() {
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         int port = m_light_ports[i];
         m_light_intensities_copies[i] = m_light_intensities[i];
-        if (m_light_only_wave[i] && port != -1)
+        if (!m_light_only_wave[i] && port != -1)
             digitalWrite(port, LOW);
     }
 }

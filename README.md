@@ -31,10 +31,11 @@ All communication happens by sending messages in the following format: `[code (1
 - virtual_pin_type:
     - 0: Central AC. pin-specific info: `[temp_index]`
         - temp_index: Index of the temperature sensor on the OneWire bus
-    - 1: ISR Light controller. pin-specific info: `[frequency][sync][pin]`
+    - 1: ISR Light controller (only makes a pulse during the AC wave). pin-specific info: `[frequency][sync][pin]`
         - frequency: frequency of the ISR light (50 or 60). All virtual pins of this type MUST have the same value for their frequency.
         - sync: the pin on which SYNC happens (zero-crossing is measured). All virtual pins of this type MUST have the same value for their sync.
         - pin: pin to output the waves for this light.
+    - 2: Same as ISR light (1) but this doesn't make a pulse at the right time, but rather keeps the port HIGH until next zero cross
 
 ### Code 3: Set pin output `[3][3][pin_type][pin_index][output]`
 - pin_type: 0 for digital pin, 1 for analog pin, 2 for virtual pin
