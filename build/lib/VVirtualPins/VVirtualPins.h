@@ -9,11 +9,14 @@
 #include <DallasTemperature.h>
 #include <TimerOne.h>
 
+#include "Multiplexer.h"
+
 #define ONE_WIRE_PIN 53
 
-#define VIRTUAL_PIN_CENTRAL_AC 0
-#define VIRTUAL_PIN_ISR_LIGHT  1
-#define VIRTUAL_PIN_ISR_LIGHT2 2
+#define VIRTUAL_PIN_CENTRAL_AC              0
+#define VIRTUAL_PIN_ISR_LIGHT               1
+#define VIRTUAL_PIN_ISR_LIGHT2              2
+#define VIRTUAL_PIN_MULTIPLEXED             3
 
 #define MAX_ISR_LIGHTS 16
 

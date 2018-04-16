@@ -17,6 +17,11 @@ PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data) {
                 return NULL;
             return new ISRLights2PinState(data[0] & 0xFF, data[1] & 0xFF, data[2] & 0xFF);
         }
+        case VIRTUAL_PIN_MULTIPLEXED: {
+            if (data_len != 1)
+                return NULL;
+            return new MultiplexedPin(data[0] & 0xFF);
+        }
     }
 
     return NULL;
@@ -83,7 +88,7 @@ void ISREngine::timer_interrupt() {
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         int port = m_light_ports[i];
         int intensity = m_light_intensities_copies[i];
-        if (m_light_only_wave) {
+        if (m_light_only_wave[i]) {
             if (port != -1 && intensity == m_clock_tick) {
                 digitalWrite(port, HIGH);
                 delayMicroseconds(m_sync_wavelength);

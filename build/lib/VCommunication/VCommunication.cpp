@@ -56,9 +56,15 @@ void communication_update(unsigned long cur_time) {
         sync_send_timer = cur_time;
         sync_send_timer += sync_send_period;
         if (full_sync) {
+            #ifdef __SHAMMAM_SIMULATION__
+                printf("SENDING FULL SYNC\n");
+            #endif
             for (int i = 0; i < 8; i++)
                 SerialRef->write(FULL_SYNC_SEQUENCE[i]);
         } else {
+            #ifdef __SHAMMAM_SIMULATION__
+                printf("SENDING HALF SYNC\n");
+            #endif
             for (int i = 0; i < 8; i++)
                 SerialRef->write(SYNC_SEQUENCE[i]);
         }

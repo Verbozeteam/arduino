@@ -96,15 +96,15 @@ uint8_t DigitalPinState::readInput() {
     return digitalRead(m_index);
 }
 
-AnalogPinState::AnalogPinState(uint8_t index, uint8_t mode) : PinState(index, mode, PIN_TYPE_ANALOG) {
+AnalogPinState::AnalogPinState(uint8_t index, uint8_t mode) : PinState(A0 + index, mode, PIN_TYPE_ANALOG) {
 }
 
 void AnalogPinState::setOutput(uint8_t output) {
-    digitalWrite(A0 + m_index, output);
+    digitalWrite(m_index, output);
 }
 
 uint8_t AnalogPinState::readInput() {
-    return analogRead(A0 + m_index);
+    return analogRead(m_index);
 }
 
 void reset_board() {
@@ -174,11 +174,19 @@ uint8_t pin_states_on_command(uint8_t msg_type, uint8_t msg_len, char* command_b
             break;
         }
         case COMMAND_SET_VIRTUAL_PIN_MODE: {
+            #ifdef __SHAMMAM_SIMULATION__
+                printf("SetVirtualPinMode() (msg_len=%d)\n", msg_len);
+            #endif
+
             if (msg_len < 3)
                 return 3;
 
             if (pin)
                 delete pin;
+
+            #ifdef __SHAMMAM_SIMULATION__
+                printf("SetVirtualPinMode(%d, %d, [...]) (msg_len=%d)\n", command_buffer[2], msg_len-3, msg_len);
+            #endif
 
             pin = virtual_pins[pin_index] = create_virtual_pin(command_buffer[2], msg_len-3, &command_buffer[3]);
             if (!pin)
