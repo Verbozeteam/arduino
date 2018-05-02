@@ -104,7 +104,9 @@ void AnalogPinState::setOutput(uint8_t output) {
 }
 
 uint8_t AnalogPinState::readInput() {
-    return analogRead(m_index);
+    int val = analogRead(m_index);
+    // resolution bye bye! from 1023 to 255
+    return val / 4;
 }
 
 void reset_board() {
