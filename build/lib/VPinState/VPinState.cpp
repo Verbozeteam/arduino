@@ -11,7 +11,7 @@ uint8_t num_digital_pins = 0;
 uint8_t num_analog_pins = 0;
 uint8_t num_virtual_pins = 0;
 
-PinState::PinState(uint8_t index, uint8_t mode, uint8_t type) : m_index(index), m_mode(mode), m_type(type) {
+PinState::PinState(uint8_t index, uint8_t mode, uint8_t type) : m_index(index), m_index_in_middleware(index), m_mode(mode), m_type(type) {
     setMode(mode);
     m_next_report = 0;
     m_read_interval = -1;
@@ -27,7 +27,7 @@ void PinState::update(unsigned long cur_time) {
             if (reading != m_last_reading_sent || m_is_first_send) {
                 m_is_first_send = 0;
                 m_last_reading_sent = reading;
-                char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
+                char cmd[3] = {(char)m_type, (char)m_index_in_middleware, (char)reading};
                 communication_send_command(COMMAND_PIN_READING, 3, cmd);
             }
         } else if (cur_time >= m_next_report) {
@@ -36,7 +36,7 @@ void PinState::update(unsigned long cur_time) {
             else
                 m_next_report = cur_time + m_read_interval;
             uint8_t reading = readInput();
-            char cmd[3] = {(char)m_type, (char)m_index, (char)reading};
+            char cmd[3] = {(char)m_type, (char)m_index_in_middleware, (char)reading};
             communication_send_command(COMMAND_PIN_READING, 3, cmd);
         }
     } else if (m_mode == PIN_MODE_PWM_SMOOTH) {
@@ -97,6 +97,7 @@ uint8_t DigitalPinState::readInput() {
 }
 
 AnalogPinState::AnalogPinState(uint8_t index, uint8_t mode) : PinState(A0 + index, mode, PIN_TYPE_ANALOG) {
+    m_index_in_middleware = index;
 }
 
 void AnalogPinState::setOutput(uint8_t output) {

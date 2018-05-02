@@ -32,6 +32,7 @@
 class PinState {
 protected:
     uint8_t m_index; // pin index on the Arduino board
+    uint8_t m_index_in_middleware; // pin index in the middleware (for analog pins, m_index is e.g. 3+A0=56, but on middleware it is pin 3 (a3))
     uint8_t m_mode; // pin mode (input, output, ...)
     uint8_t m_type; // pin type (analog, digital, ...)
     uint8_t m_last_reading_sent; // last value sent to the controller. if mode is PWM_SMOOTH, this is used to indicate the last value written to the PWM
