@@ -2,7 +2,7 @@
 #include "VBuffer.h"
 #include <Arduino.h>
 
-#define MAX_COMMAND_SIZE 128
+#define MAX_COMMAND_SIZE 32
 
 char FULL_SYNC_SEQUENCE[8] = {(char)254, (char)6, (char)253, (char)11, (char)76, (char)250, (char)250, (char)255};
 char SYNC_SEQUENCE[8] = {(char)254, (char)6, (char)252, (char)11, (char)76, (char)250, (char)250, (char)255};
@@ -18,6 +18,7 @@ int full_sync = 0;
 int is_using_sync = 1;
 
 HardwareSerial* SerialRef = NULL;
+HardwareSerial* LoggingSerial = NULL;
 
 void communication_init(HardwareSerial* serial, COMMAND_CALLBACK on_command, int use_sync) {
     SerialRef = serial;
@@ -26,6 +27,8 @@ void communication_init(HardwareSerial* serial, COMMAND_CALLBACK on_command, int
     is_using_sync = use_sync;
     if (!is_using_sync)
         half_sync = full_sync = 1;
+    else
+        LOG_INFO("Looking for sync");
 }
 
 uint8_t communication_is_synced(int set_to) {
@@ -48,20 +51,27 @@ uint8_t communication_is_synced(int set_to) {
 void communication_update(unsigned long cur_time) {
     int num_bytes = SerialRef->available();
     while (num_bytes > 0 && !g_read_buffer.full()) {
-        g_read_buffer.append(SerialRef->read());
+        char c = SerialRef->read();
+        g_read_buffer.append(c);
         num_bytes--;
+    }
+
+    if (g_read_buffer.full()) {
+        LOG_WARNING("communication_update(): buffer is full");
     }
 
     if (cur_time >= sync_send_timer && is_using_sync) {
         sync_send_timer = cur_time;
         sync_send_timer += sync_send_period;
         if (full_sync) {
+            LOG_INFO("sending a full sync sequence");
             #ifdef __SHAMMAM_SIMULATION__
                 printf("SENDING FULL SYNC\n");
             #endif
             for (int i = 0; i < 8; i++)
                 SerialRef->write(FULL_SYNC_SEQUENCE[i]);
         } else {
+            LOG_INFO("sending a half sync sequence");
             #ifdef __SHAMMAM_SIMULATION__
                 printf("SENDING HALF SYNC\n");
             #endif
@@ -94,12 +104,14 @@ void communication_update(unsigned long cur_time) {
                 int found_full = g_read_buffer.at(sync_start+2) == FULL_SYNC_SEQUENCE[2];
                 g_read_buffer.consume(sync_start+SYNC_SEQUENCE_LEN);
                 if (found_full) {
+                    LOG_INFO("found full sync sequence");
                     #ifdef __SHAMMAM_SIMULATION__
                         printf("Found full sync\n");
                     #endif
                     sync_send_timer = 0;
                     communication_is_synced(1);
                 } else {
+                    LOG_INFO("found half sync sequence");
                     #ifdef __SHAMMAM_SIMULATION__
                         printf("Found half sync\n");
                     #endif
@@ -108,9 +120,12 @@ void communication_update(unsigned long cur_time) {
             } else {
                 rb_size = g_read_buffer.size();
                 int truncate_size;
-                for (truncate_size = 0; truncate_size < rb_size; truncate_size++)
+                for (truncate_size = 0; truncate_size < rb_size; truncate_size++) {
                     if (g_read_buffer.at(truncate_size) == SYNC_SEQUENCE[0])
                         break;
+                    else
+                        LOG_WARNING2("found bad byte: ", (int)g_read_buffer.at(truncate_size));
+                }
                 g_read_buffer.consume(truncate_size);
             }
         }
@@ -122,8 +137,12 @@ void communication_update(unsigned long cur_time) {
         char msg_len = g_read_buffer.at(1);
         if (rb_size >= 2 + msg_len) {
             g_read_buffer.consume(2);
-            for (int i = 0; i < msg_len; i++)
+            LOG_INFO4_NONL("found on buffer: [", (int)msg_type, ", ", (int)msg_len);
+            for (int i = 0; i < msg_len; i++) {
                 command_buffer[i] = g_read_buffer.consume();
+                LOG_INFO2_CONTINUTE(", ", (int)command_buffer[i]);
+            }
+            LOG_INFO_CONTINUE("]\r\n");
             #ifdef __SHAMMAM_SIMULATION__
                 printf(">> [0x%X 0x%X", msg_type & 0xFF, msg_len & 0xFF);
                 for (int x = 0; x < msg_len; x++)
@@ -142,17 +161,26 @@ void communication_update(unsigned long cur_time) {
                         printf("INVALID SYNC SEQUENCE\n");
                     #endif
                     communication_is_synced(0);
+                    LOG_ERROR("BAD sync sequence!");
+                } else {
+                    LOG_INFO("found full sync sequence");
                 }
             } else {
                 if (on_command_cb(msg_type, msg_len, &command_buffer[0]) != 0) {
                     #ifdef __SHAMMAM_SIMULATION__
                         printf("INVALID COMMAND\n");
                     #endif
+                    LOG_ERROR("INVALID COMMAND!");
                     communication_is_synced(0);
                 }
             }
-        } else
+        } else {
+            if (msg_len > MAX_COMMAND_SIZE) {
+                // hmm? huge command!
+                communication_is_synced(0);
+            }
             break;
+        }
         rb_size = g_read_buffer.size();
     }
 }
@@ -164,3 +192,7 @@ void communication_send_command(uint8_t type, uint8_t len, char* cmd) {
         SerialRef->write(cmd[i]);
 }
 
+void communication_init_logging(HardwareSerial* serial) {
+    LoggingSerial = serial;
+    LoggingSerial->begin(9600);
+}

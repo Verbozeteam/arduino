@@ -12,7 +12,8 @@ uint8_t num_analog_pins = 0;
 uint8_t num_virtual_pins = 0;
 
 PinState::PinState(uint8_t index, uint8_t mode, uint8_t type) : m_index(index), m_index_in_middleware(index), m_mode(mode), m_type(type) {
-    setMode(mode);
+    if (type != PIN_TYPE_VIRTUAL)
+        setMode(mode);
     m_next_report = 0;
     m_read_interval = -1;
     m_last_reading_sent = 3;
@@ -111,7 +112,7 @@ uint8_t AnalogPinState::readInput() {
 }
 
 void reset_board() {
-    for (uint8_t i = 0; i < num_digital_pins; i++) {
+    /*for (uint8_t i = 0; i < num_digital_pins; i++) {
         if (digital_pins[i]) {
             delete digital_pins[i];
             digital_pins[i] = NULL;
@@ -130,7 +131,7 @@ void reset_board() {
         }
     }
 
-    ISREngine::reset();
+    ISREngine::reset();*/
 }
 
 void init_pin_states(uint8_t num_digital, uint8_t num_analog, uint8_t num_virtual) {
@@ -141,15 +142,20 @@ void init_pin_states(uint8_t num_digital, uint8_t num_analog, uint8_t num_virtua
 
 uint8_t pin_states_on_command(uint8_t msg_type, uint8_t msg_len, char* command_buffer) {
     if (msg_type == COMMAND_RESET_BOARD) {
+        LOG_INFO("command: COMMAND_RESET_BOARD");
         reset_board();
         return 0;
     }
 
-    if (msg_len < 2)
+    if (msg_len < 2) {
+        LOG_ERROR("command too short");
         return 1;
+    }
 
     uint8_t pin_type = command_buffer[0];
     uint8_t pin_index = command_buffer[1];
+
+    LOG_INFO3("pin: ", pin_type == PIN_TYPE_DIGITAL ? "digital" : (pin_type == PIN_TYPE_ANALOG ? "analog" : (pin_type == PIN_TYPE_VIRTUAL ? "virtual" : "unknown")), pin_index);
 
     PinState* pin;
     if (pin_type == PIN_TYPE_DIGITAL && pin_index < num_digital_pins) {
@@ -158,61 +164,105 @@ uint8_t pin_states_on_command(uint8_t msg_type, uint8_t msg_len, char* command_b
         pin = analog_pins[pin_index];
     } else if (pin_type == PIN_TYPE_VIRTUAL && pin_index < num_virtual_pins) {
         pin = virtual_pins[pin_index];
-    } else
+    } else {
+        LOG_ERROR("invalid pin type");
         return 2;
+    }
 
     switch(msg_type) {
         case COMMAND_SET_PIN_MODE: {
-            if (msg_len != 3)
+            LOG_INFO("command: COMMAND_SET_PIN_MODE");
+
+            if (msg_len != 3) {
+                LOG_ERROR("invalid length");
                 return 3;
+            }
+
             if (!pin) {
                 if (pin_type == PIN_TYPE_DIGITAL) {
                     digital_pins[pin_index] = new DigitalPinState(pin_index, command_buffer[2]);
                 } else if (pin_type == PIN_TYPE_ANALOG) {
                     analog_pins[pin_index] = new AnalogPinState(pin_index, command_buffer[2]);
-                } else
+                } else {
+                    LOG_ERROR("invalid pin type for this command");
                     return 4;
-            } else
+                }
+            } else {
                 pin->setMode(command_buffer[2]);
+            }
+
             break;
         }
         case COMMAND_SET_VIRTUAL_PIN_MODE: {
+            LOG_INFO("command: COMMAND_SET_VIRTUAL_PIN_MODE");
             #ifdef __SHAMMAM_SIMULATION__
                 printf("SetVirtualPinMode() (msg_len=%d)\n", msg_len);
             #endif
 
-            if (msg_len < 3)
+            if (msg_len < 3) {
+                LOG_ERROR("command too short");
                 return 3;
+            }
 
-            if (pin)
+            if (pin) {
+                LOG_INFO("deleting old pin");
                 delete pin;
+            }
 
             #ifdef __SHAMMAM_SIMULATION__
                 printf("SetVirtualPinMode(%d, %d, [...]) (msg_len=%d)\n", command_buffer[2], msg_len-3, msg_len);
             #endif
 
             pin = virtual_pins[pin_index] = create_virtual_pin(command_buffer[2], msg_len-3, &command_buffer[3]);
-            if (!pin)
+            if (!pin) {
+                LOG_ERROR("FAILED to create virtual pin");
                 return 4;
+            }
 
             break;
         }
         case COMMAND_SET_PIN_OUTPUT: {
-            if (msg_len != 3 || !pin) {
+            LOG_INFO("command: COMMAND_SET_PIN_OUTPUT");
+
+            if (msg_len != 3) {
+                LOG_ERROR("invalid command length");
                 return 3;
             }
+            if (!pin) {
+                LOG_ERROR("invalid pin");
+                return 4;
+            }
+
             pin->setOutput(command_buffer[2]);
             break;
         }
         case COMMAND_READ_PIN_INPUT: {
-            if (msg_len != 2 || !pin)
+            LOG_INFO("command: COMMAND_READ_PIN_INPUT");
+
+            if (msg_len != 2) {
+                LOG_ERROR("invalid command length");
                 return 3;
+            }
+            if (!pin) {
+                LOG_ERROR("invalid pin");
+                return 4;
+            }
+
             pin->markForReading();
             break;
         }
         case COMMAND_REGISTER_PIN_LISTENER: {
-            if (msg_len != 6 || !pin)
+            LOG_INFO("command: COMMAND_REGISTER_PIN_LISTENER");
+
+            if (msg_len != 6) {
+                LOG_ERROR("invalid command length");
                 return 3;
+            }
+            if (!pin) {
+                LOG_ERROR("invalid pin");
+                return 4;
+            }
+
             unsigned long byte1 = (unsigned long)command_buffer[2] & 0xFF;
             unsigned long byte2 = (unsigned long)command_buffer[3] & 0xFF;
             unsigned long byte3 = (unsigned long)command_buffer[4] & 0xFF;
@@ -223,10 +273,12 @@ uint8_t pin_states_on_command(uint8_t msg_type, uint8_t msg_len, char* command_b
             byte1 |= byte2;
             byte1 |= byte3;
             byte1 |= byte4;
+
             pin->setReadingInterval(byte1);
             break;
         }
         default:
+            LOG_ERROR("command: UNKNOWN!");
             return 5;
     }
 

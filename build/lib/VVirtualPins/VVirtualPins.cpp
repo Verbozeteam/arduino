@@ -1,4 +1,5 @@
 #include "VVirtualPins.h"
+#include "VCommunication.h"
 
 PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data) {
     switch (type) {
@@ -43,11 +44,15 @@ void TemperatureEngine::initialize(uint8_t one_wire_pin) {
 }
 
 void TemperatureEngine::discoverOneWireDevices() {
+    LOG_INFO("TemperatureEngine::discoverOneWireDevices()");
     m_num_sensors = 0;
     uint8_t addr[8];
-    while (m_one_wire.search(addr))
+    while (m_one_wire.search(addr)) {
+        LOG_INFO("found temperature sensor on: ");
         m_num_sensors++;
+    }
     m_one_wire.reset_search();
+    LOG_INFO2("TemperatureEngine::discoverOneWireDevices() discovered devices: ", m_num_sensors);
 }
 
 void TemperatureEngine::update(unsigned long cur_time) {
