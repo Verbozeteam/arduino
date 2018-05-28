@@ -1,33 +1,6 @@
 #include "VVirtualPins.h"
 #include "VCommunication.h"
 
-PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data) {
-    switch (type) {
-        case VIRTUAL_PIN_CENTRAL_AC: {
-            if (data_len != 1)
-                return NULL;
-            return new CentralACPinState(data[0] & 0xFF);
-        }
-        case VIRTUAL_PIN_ISR_LIGHT: {
-            if (data_len != 3)
-                return NULL;
-            return new ISRLightsPinState(data[0] & 0xFF, data[1] & 0xFF, data[2] & 0xFF);
-        }
-        case VIRTUAL_PIN_ISR_LIGHT2: {
-            if (data_len != 3)
-                return NULL;
-            return new ISRLights2PinState(data[0] & 0xFF, data[1] & 0xFF, data[2] & 0xFF);
-        }
-        case VIRTUAL_PIN_MULTIPLEXED: {
-            if (data_len != 1)
-                return NULL;
-            return new MultiplexedPin(data[0] & 0xFF);
-        }
-    }
-
-    return NULL;
-}
-
 OneWire TemperatureEngine::m_one_wire(ONE_WIRE_PIN);
 DallasTemperature TemperatureEngine::m_sensors;
 uint8_t TemperatureEngine::m_num_sensors;
@@ -62,18 +35,19 @@ void TemperatureEngine::update(unsigned long cur_time) {
     }
 }
 
-
-CentralACPinState::CentralACPinState(uint8_t temp_index)
-    : PinState(temp_index, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL)
-{
+void central_ac_setOutput_method(pin_state_t* pin, uint8_t output) {
 }
 
-void CentralACPinState::setOutput(uint8_t output) {
-}
-
-uint8_t CentralACPinState::readInput() {
-    float m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(m_index);
+uint8_t central_ac_readInput_method(pin_state_t* pin) {
+    float m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(pin->m_index);
     return (uint8_t)(m_cur_temp*4.0f);
+}
+
+void initialize_central_ac_pin(pin_state_t* pin, uint8_t temp_index) {
+    initialize_pin(pin, temp_index, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL);
+
+    pin->setOutput = central_ac_setOutput_method;
+    pin->readInput = central_ac_readInput_method;
 }
 
 /**
@@ -150,14 +124,49 @@ void ISREngine::reset() {
     }
 }
 
-ISRLightsPinState::ISRLightsPinState(uint8_t frequency, uint8_t sync_port, uint8_t out_port) {
-    m_my_index = 0;
-    m_target_pwm_value = 105; // this is the 0, not 0
-    m_next_report = 0;
+#define ISRDATA(pin) ((isr_light_custom_data_t*)pin->_m_custom_data)
+struct isr_light_custom_data_t {
+    uint8_t m_my_index;
+};
+
+void isr_light_setOutput_method(pin_state_t* pin, uint8_t output) {
+    pin->m_target_pwm_value = (int) (float)output * 1.1f;
+}
+
+void isr_light_update_method(pin_state_t* pin, unsigned long cur_time) {
+    int my_index = ISRDATA(pin)->m_my_index;
+
+    if (cur_time >= pin->m_next_report && pin->m_target_pwm_value != ISREngine::m_light_intensities[my_index] && ISREngine::m_light_intensities[my_index] != -1) {
+        pin->m_next_report = cur_time + 10;
+        // if (ISREngine::m_light_intensities[m_my_index] > 90)
+        //     pin->m_next_report += 15; // slower dimming at dim intensities
+
+        if (pin->m_target_pwm_value > ISREngine::m_light_intensities[my_index]) {
+            ISREngine::m_light_intensities[my_index]++;
+        } else {
+            ISREngine::m_light_intensities[my_index]--;
+        }
+    }
+}
+
+uint8_t isr_light_readInput_method(pin_state_t* pin) {
+    return ISREngine::m_light_intensities[ISRDATA(pin)->m_my_index];
+}
+
+void initialize_isr_light_pin(pin_state_t* pin, uint8_t frequency, uint8_t sync_port, uint8_t out_port) {
+    initialize_pin(pin);
+
+    ISRDATA(pin)->m_my_index = 0;
+    pin->m_target_pwm_value = 105; // this is the 0, not 0
+    pin->m_next_report = 0;
+
+    pin->setOutput = isr_light_setOutput_method;
+    pin->readInput = isr_light_readInput_method;
+    pin->update = isr_light_update_method;
 
     for (int i = 0; i < MAX_ISR_LIGHTS; i++) {
         if (ISREngine::m_light_ports[i] == -1) {
-            m_my_index = i;
+            ISRDATA(pin)->m_my_index = i;
             ISREngine::m_light_intensities[i] = 105;
             ISREngine::m_light_intensities_copies[i] = 105;
             ISREngine::m_light_ports[i] = out_port;
@@ -169,29 +178,38 @@ ISRLightsPinState::ISRLightsPinState(uint8_t frequency, uint8_t sync_port, uint8
     ISREngine::initialize(frequency, sync_port);
 }
 
-void ISRLightsPinState::setOutput(uint8_t output) {
-    m_target_pwm_value = (int) (float)output * 1.1f;
+void initialize_isr_light_2_pin(pin_state_t* pin, uint8_t frequency, uint8_t sync_port, uint8_t out_port) {
+    initialize_isr_light_pin(pin, frequency, sync_port, out_port);
+    ISREngine::m_light_only_wave[ISRDATA(pin)->m_my_index] = false;
 }
 
-void ISRLightsPinState::update(unsigned long cur_time) {
-    if (cur_time >= m_next_report && m_target_pwm_value != ISREngine::m_light_intensities[m_my_index] && ISREngine::m_light_intensities[m_my_index] != -1) {
-        m_next_report = cur_time + 10;
-        // if (ISREngine::m_light_intensities[m_my_index] > 90)
-        //     m_next_report += 15; // slower dimming at dim intensities
 
-        if (m_target_pwm_value > ISREngine::m_light_intensities[m_my_index]) {
-            ISREngine::m_light_intensities[m_my_index]++;
-        } else {
-            ISREngine::m_light_intensities[m_my_index]--;
+void initialize_virtual_pin(pin_state_t** pin_out, uint8_t type, uint8_t data_len, char* data) {
+    switch (type) {
+        case VIRTUAL_PIN_CENTRAL_AC: {
+            if (data_len != 1)
+                *pin_out = NULL;
+            else
+                initialize_central_ac_pin(*pin_out, data[0] & 0xFF);
+            break;
         }
+        case VIRTUAL_PIN_ISR_LIGHT: {
+            if (data_len != 3)
+                *pin_out = NULL;
+            else
+                initialize_isr_light_pin(*pin_out, data[0] & 0xFF, data[1] & 0xFF, data[2] & 0xFF);
+            break;
+        }
+        case VIRTUAL_PIN_ISR_LIGHT2: {
+            if (data_len != 3)
+                *pin_out = NULL;
+            else
+                initialize_isr_light_2_pin(*pin_out, data[0] & 0xFF, data[1] & 0xFF, data[2] & 0xFF);
+            break;
+        }
+        default:
+            *pin_out = NULL;
     }
 }
 
-uint8_t ISRLightsPinState::readInput() {
-    return ISREngine::m_light_intensities[m_my_index];
-}
 
-ISRLights2PinState::ISRLights2PinState(uint8_t frequency, uint8_t sync_port, uint8_t out_port)
-    : ISRLightsPinState(frequency, sync_port, out_port) {
-    ISREngine::m_light_only_wave[m_my_index] = false;
-}
