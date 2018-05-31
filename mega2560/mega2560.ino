@@ -13,7 +13,7 @@ PinState* virtual_pins[_NUM_VIRTUAL_PINS] = { NULL };
 
 void setup() {
     communication_init(&Serial, pin_states_on_command);
-    //communication_init_logging(&Serial1);
+    communication_init_logging(&Serial1);
 
     TemperatureEngine::initialize(ONE_WIRE_PIN);
     ISREngine::reset();
