@@ -30,6 +30,8 @@
 
 
 class PinState {
+    friend void pin_states_time_rollover();
+
 protected:
     uint8_t m_index; // pin index on the Arduino board
     uint8_t m_index_in_middleware; // pin index in the middleware (for analog pins, m_index is e.g. 3+A0=56, but on middleware it is pin 3 (a3))
@@ -79,3 +81,5 @@ public:
 void init_pin_states(uint8_t num_digital, uint8_t num_analog, uint8_t num_virtual);
 uint8_t pin_states_on_command(uint8_t msg_type, uint8_t msg_len, char* command_buffer);
 void pin_states_update(unsigned long cur_time);
+
+void pin_states_time_rollover();

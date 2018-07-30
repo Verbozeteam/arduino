@@ -299,3 +299,16 @@ void pin_states_update(unsigned long cur_time) {
     }
 }
 
+void pin_states_time_rollover() {
+    // time rolled-over, reset all m_next_reports
+
+    for (int i = 0; i < num_digital_pins; i++)
+        if (digital_pins[i])
+            digital_pins[i]->m_next_report = 0;
+    for (int i = 0; i < num_analog_pins; i++)
+        if (analog_pins[i])
+            analog_pins[i]->m_next_report = 0;
+    for (int i = 0; i < num_virtual_pins; i++)
+        if (virtual_pins[i])
+            virtual_pins[i]->m_next_report = 0;
+}

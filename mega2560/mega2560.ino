@@ -23,8 +23,14 @@ void setup() {
     LOG_INFO("setup() complete");
 }
 
+unsigned long last_time = 0;
 void loop() {
     unsigned long cur_time = millis();
+    if (cur_time < last_time) {
+        pin_states_time_rollover();
+        communication_time_rollover();
+    }
+    last_time = cur_time;
 
     communication_update(cur_time);
 

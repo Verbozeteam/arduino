@@ -13,6 +13,8 @@ void communication_update(unsigned long cur_time);
 
 void communication_send_command(uint8_t type, uint8_t len, char* cmd);
 
+void communication_time_rollover();
+
 extern HardwareSerial* LoggingSerial;
 
 void communication_init_logging(HardwareSerial* serial);

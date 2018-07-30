@@ -20,6 +20,11 @@ int is_using_sync = 1;
 HardwareSerial* SerialRef = NULL;
 HardwareSerial* LoggingSerial = NULL;
 
+void communication_time_rollover() {
+    // time rolled-over, reset the sync send timer
+    sync_send_timer = 0;
+}
+
 void communication_init(HardwareSerial* serial, COMMAND_CALLBACK on_command, int use_sync) {
     SerialRef = serial;
     SerialRef->begin(9600);
