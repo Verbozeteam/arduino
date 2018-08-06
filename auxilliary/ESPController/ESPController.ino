@@ -1,44 +1,55 @@
 #include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
 #include <ArduinoJson.h>
 
-#define TARGET_DEVICE_NAME "Yahya House Middleware"
-#define WPA_SSID "yautomation"
-#define WPA_PASS "notdefaultatall"
-#define AUTHENTICATION_TOKEN "423fh424m234jf1j2hg2gh3k"
-#define AUTHENTICATION_PASS "ilovedogs<3"
-#define AUTHENTICATION_MESSAGE "{\"authentication\":{\"token\": \"" AUTHENTICATION_TOKEN "\",\"password\":\"" AUTHENTICATION_PASS "\",\"token_type\":4}}"
+#define TARGET_DEVICE_NAME      "QSTP Office Middleware"
+#define WPA_SSID                "HB-DLINK"
+#define WPA_PASS                "mody4326245"
+#define AUTHENTICATION_TOKEN    "423fh424m234jf1j2hg2gh3k"
+#define AUTHENTICATION_PASS     "ilovedogs<3"
+#define AUTHENTICATION_MESSAGE  "{\"authentication\":{\"token\": \"" AUTHENTICATION_TOKEN "\",\"password\":\"" AUTHENTICATION_PASS "\",\"token_type\":4}}"
 
 #define DEBUGGING
 #ifdef DEBUGGING
-#define LOG(x) Serial.print(x)
-#define LOGPF(...) Serial.printf(__VA_ARGS__)
-#define LOGLN(x) Serial.println(x)
+#define LOG Serial.print
+#define LOGPF Serial.printf
+#define LOGLN Serial.println
 #define LOGJSON(x) x.printTo(Serial)
 #else
-#define LOG(x)
-#define LOGPF(x)
-#define LOGLN(x)
-#define LOGJSON(x)
+#define LOG(...)
+#define LOGPF(...)
+#define LOGLN(...)
+#define LOGJSON(...)
 #endif
 
-#define THING_LIGHTSWITCH 0
-#define THING_DIMMER      1
-#define THING_PWM_DIMMER  2
+#define THING_LIGHTSWITCH     0
+#define THING_DIMMER          1
+#define THING_PWM_DIMMER      2
+
+#define THING_READERS_START   50
+#define THING_DIGITAL_READER  50
+#define THING_ANALOG_READER   51
 
 struct THING_DEF {
   char type;
   const char* thing_id;
   int pin;
+  int last_reading;
 };
 
-const THING_DEF thing_defs[] = {
-  {THING_LIGHTSWITCH, "lightswitch-1", 0},
-  {THING_LIGHTSWITCH, "lightswitch-2", 2},
+THING_DEF thing_defs[] = {
+  {THING_LIGHTSWITCH, "lightswitch-1", 12, 0},
+  {THING_LIGHTSWITCH, "lightswitch-2", 5, 0},
+  {THING_DIGITAL_READER, "", 0, 0},
+  {THING_DIGITAL_READER, "", 9, 0},
 };
 const int num_things = sizeof(thing_defs) / sizeof(THING_DEF);
 
-WiFiClient client;
+WiFiClient insecureClient;
+WiFiClientSecure secureClient;
+WiFiClient* client = &insecureClient;
+
 WiFiUDP Udp;
 char target_middleware_ip[32] = {0};
 int target_middleware_port = 0;
@@ -58,6 +69,7 @@ void sendMessageToClient(const char* msg);
 bool readClient();
 void onConnected();
 void performUDPScanning();
+void updatePinReaders();
 void onThingState(THING_DEF* thing, JsonObject& state);
 
 void spinDelay(unsigned long t) {
@@ -71,7 +83,10 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   for (int i = 0; i < num_things; i++) {
-    pinMode(thing_defs[i].pin, OUTPUT);
+    if (thing_defs[i].type >= THING_READERS_START)
+      pinMode(thing_defs[i].pin, INPUT);
+    else
+      pinMode(thing_defs[i].pin, OUTPUT);
   }
 
   WiFi.mode(WIFI_STA);
@@ -111,12 +126,12 @@ void loop() {
     return;
   }
   
-  if (!client.connected()) {
+  if (!client->connected()) {
     blink_step_ms = 5000;
     if (strlen(target_middleware_ip) == 0 || target_middleware_port == 0)
       return;
-    LOGPF("Attempting to connect to %s:%d...\n", target_middleware_ip, target_middleware_port);
-    if (!client.connect(target_middleware_ip, target_middleware_port)) {
+    LOGPF("Attempting to connect to %s:%d (%s)...\n", target_middleware_ip, target_middleware_port, (client == &secureClient) ? "secure" : "insecure");
+    if (!client->connect(target_middleware_ip, target_middleware_port)) {
       LOGLN(" Failed!");
       spinDelay(2000);
       return;
@@ -127,10 +142,12 @@ void loop() {
 
   if (!readClient() || current_time_ms >= connection_timeout_time) {
     LOGLN("Failed to read from client");
-    client.stop();
+    client->stop();
     spinDelay(2000);
     return;
   }
+  
+  updatePinReaders();
   
   // send heartbeat if time has come
   if (current_time_ms >= next_heartbeat) {
@@ -138,7 +155,7 @@ void loop() {
     sendMessageToClient("{}");
   }
 
-  if (!client.connected()) {
+  if (!client->connected()) {
     LOGLN("Client connection died");
     spinDelay(2000);
     return;
@@ -154,8 +171,8 @@ void sendMessageToClient(const char* msg) {
   sizebuf[1] = ((msg_len >> 8) & 0xFF);
   sizebuf[2] = 0;
   sizebuf[3] = 0;
-  client.write(sizebuf, 4);
-  client.write(msg, msg_len);
+  client->write(sizebuf, 4);
+  client->write(msg, msg_len);
 }
 
 void onConnected() {
@@ -182,19 +199,19 @@ void onConnected() {
 }
 
 bool readClient() {
-  int num_available = client.available();
+  int num_available = client->available();
   if (num_available > 4) {
     uint8_t msg_len_buf[4];
-    client.peekBytes(msg_len_buf, 4);
+    client->peekBytes(msg_len_buf, 4);
     if (msg_len_buf[2] != 0 || msg_len_buf[3] != 0) {
       return false;
     }
     size_t msg_len = msg_len_buf[0] | (msg_len_buf[1] << 8);
     if (num_available >= 4 + msg_len) {
-      client.read(msg_len_buf, 4); // consume the 4 bytes
+      client->read(msg_len_buf, 4); // consume the 4 bytes
       connection_timeout_time = current_time_ms + 11000;
       DynamicJsonBuffer json(msg_len);
-      JsonObject& root = json.parseObject(client);
+      JsonObject& root = json.parseObject(*client);
       for (int i = 0; i < num_things; i++) {
         if (root.containsKey(thing_defs[i].thing_id)) {
           onThingState(&thing_defs[i], root[thing_defs[i].thing_id]);
@@ -228,7 +245,7 @@ void performUDPScanning() {
           char* device_name = incoming_udp_packet + 4;
           char* service_port = NULL;
           LOGPF("Device found: %s (%s, type=%d)\n", device_name, Udp.remoteIP().toString().c_str(), service_type);
-          if (service_type == 3) {
+          if (service_type == 3 || service_type == 8) {
             // a middleware
             for (int i = 0; i < datalen; i++) {
               if (device_name[i] == ':') {
@@ -242,8 +259,12 @@ void performUDPScanning() {
               strcpy(target_middleware_ip, Udp.remoteIP().toString().c_str());
               target_middleware_port = service_port_int;
               LOGPF("Will try to connect to %s (%s:%d)\n", device_name, target_middleware_ip, target_middleware_port);
-              if (client.connected())
-                client.stop();
+              if (client->connected())
+                client->stop();
+              if (service_type == 3)
+                client = &insecureClient;
+              else
+                client = &secureClient;
             }
           }
         }
@@ -264,7 +285,26 @@ void performUDPScanning() {
   }
 }
 
-void onThingState(const THING_DEF* thing, JsonObject& state) {
+void updatePinReaders() {
+  char buf[256];
+  for (int i = 0; i < num_things; i++) {
+    if (thing_defs[i].type >= THING_READERS_START) {
+      if (thing_defs[i].type == THING_DIGITAL_READER || thing_defs[i].type == THING_ANALOG_READER) {
+        int reading = thing_defs[i].type == THING_DIGITAL_READER ? digitalRead(thing_defs[i].pin)
+                                                                 : analogRead(thing_defs[i].pin);
+        if (reading != thing_defs[i].last_reading) {
+          thing_defs[i].last_reading = reading;
+          sprintf(buf, "{\"port\": \"%c%d\", \"value\": %d}", thing_defs[i].type == THING_DIGITAL_READER ? 'd' : 'a', thing_defs[i].pin, reading);
+          LOG("Sending ");
+          LOGLN(buf);
+          sendMessageToClient(buf);
+        }
+      }
+    }
+  }
+}
+
+void onThingState(THING_DEF* thing, JsonObject& state) {
   LOG("Got thing state ");
   LOG(thing->thing_id);
   LOG(": ");
@@ -281,6 +321,10 @@ void onThingState(const THING_DEF* thing, JsonObject& state) {
       break;
     }
     case THING_PWM_DIMMER: {
+      if (!state.containsKey("intensity"))
+        return;
+      int intensity = state.get<int>("intensity");
+      analogWrite(thing->pin, (int)((float)intensity * 2.55));
       break;
     }
   }
