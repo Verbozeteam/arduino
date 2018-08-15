@@ -21,7 +21,7 @@ struct {
 } g_lightProps;
 
 int countNumSensors() {
-  return 3 - ((digitalRead(JUMPER_1_PIN) == HIGH || force_jumper_1) ? 1 : 0) - ((digitalRead(JUMPER_2_PIN) == HIGH == force_jumper_2) ? 1 : 0);
+  return 3 - ((digitalRead(JUMPER_1_PIN) == HIGH && !force_jumper_1) ? 1 : 0) - ((digitalRead(JUMPER_2_PIN) == HIGH && !force_jumper_2) ? 1 : 0);
 }
 
 bool isDark(int numSensors) {
@@ -72,7 +72,6 @@ void loop() {
       g_lightProps.start_time_ms+LIGHT_TURN_ON_TIME_MS < g_lightProps.start_time_ms) {  // or if time overflowed
     // then turn off the light
     g_lightProps.cur_output = max(0, g_lightProps.cur_output - LIGHT_CHANGE_STEP);
-    
   } else {
     // then turn on the light
     g_lightProps.cur_output = min(255, g_lightProps.cur_output + LIGHT_CHANGE_STEP);
