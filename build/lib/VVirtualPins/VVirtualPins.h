@@ -13,17 +13,18 @@
 
 #define ONE_WIRE_PIN 53
 
-#define VIRTUAL_PIN_CENTRAL_AC              0
+#define VIRTUAL_PIN_DIGITAL_TEMP_SENSOR     0
 #define VIRTUAL_PIN_ISR_LIGHT               1
 #define VIRTUAL_PIN_ISR_LIGHT2              2
 #define VIRTUAL_PIN_MULTIPLEXED             3
+#define VIRTUAL_PIN_NTC_TEMP_SENSOR         4
 
 #define MAX_ISR_LIGHTS 16
 
-PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data);
+PinState* create_virtual_pin(uint8_t virtual_pin_index, uint8_t type, uint8_t data_len, char* data);
 
 class TemperatureEngine {
-    friend class CentralACPinState;
+    friend class DigitalTemperaturePinState;
 
     static OneWire m_one_wire;
     static DallasTemperature m_sensors;
@@ -78,11 +79,22 @@ public:
 };
 
 /**
- * Central AC Virtual pin
+ * Digital thermometer virtual pin
  */
-class CentralACPinState : public PinState {
+class DigitalTemperaturePinState : public PinState {
 public:
-    CentralACPinState(uint8_t temp_index);
+    DigitalTemperaturePinState(uint8_t virtual_pin_index, uint8_t temp_index);
+
+    virtual void setOutput(uint8_t output);
+
+    virtual uint8_t readInput();
+};
+
+class NTCTemperaturePinState : public PinState {
+    float m_R1;
+
+public:
+    NTCTemperaturePinState(uint8_t virtual_pin_index, uint8_t index, uint8_t k_resistance);
 
     virtual void setOutput(uint8_t output);
 

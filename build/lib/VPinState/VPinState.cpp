@@ -213,7 +213,7 @@ uint8_t pin_states_on_command(uint8_t msg_type, uint8_t msg_len, char* command_b
                 printf("SetVirtualPinMode(%d, %d, [...]) (msg_len=%d)\n", command_buffer[2], msg_len-3, msg_len);
             #endif
 
-            pin = virtual_pins[pin_index] = create_virtual_pin(command_buffer[2], msg_len-3, &command_buffer[3]);
+            pin = virtual_pins[pin_index] = create_virtual_pin(pin_index, command_buffer[2], msg_len-3, &command_buffer[3]);
             if (!pin) {
                 LOG_ERROR("FAILED to create virtual pin");
                 return 4;

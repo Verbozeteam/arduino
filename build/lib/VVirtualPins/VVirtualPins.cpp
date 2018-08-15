@@ -1,12 +1,12 @@
 #include "VVirtualPins.h"
 #include "VCommunication.h"
 
-PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data) {
+PinState* create_virtual_pin(uint8_t virtual_pin_index, uint8_t type, uint8_t data_len, char* data) {
     switch (type) {
-        case VIRTUAL_PIN_CENTRAL_AC: {
+        case VIRTUAL_PIN_DIGITAL_TEMP_SENSOR: {
             if (data_len != 1)
                 return NULL;
-            return new CentralACPinState(data[0] & 0xFF);
+            return new DigitalTemperaturePinState(virtual_pin_index, data[0] & 0xFF);
         }
         case VIRTUAL_PIN_ISR_LIGHT: {
             if (data_len != 3)
@@ -22,6 +22,11 @@ PinState* create_virtual_pin(uint8_t type, uint8_t data_len, char* data) {
             if (data_len != 1)
                 return NULL;
             return new MultiplexedPin(data[0] & 0xFF);
+        }
+        case VIRTUAL_PIN_NTC_TEMP_SENSOR: {
+            if (data_len != 2)
+                return NULL;
+            return new NTCTemperaturePinState(virtual_pin_index, data[0] & 0xFF, data[1] & 0xFF);
         }
     }
 
@@ -63,17 +68,40 @@ void TemperatureEngine::update(unsigned long cur_time) {
 }
 
 
-CentralACPinState::CentralACPinState(uint8_t temp_index)
-    : PinState(temp_index, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL)
-{
+DigitalTemperaturePinState::DigitalTemperaturePinState(uint8_t virtual_pin_index, uint8_t temp_index)
+        : PinState(temp_index, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL) {
+    m_index_in_middleware = virtual_pin_index;
 }
 
-void CentralACPinState::setOutput(uint8_t output) {
+void DigitalTemperaturePinState::setOutput(uint8_t output) {
 }
 
-uint8_t CentralACPinState::readInput() {
+uint8_t DigitalTemperaturePinState::readInput() {
     float m_cur_temp = TemperatureEngine::m_sensors.getTempCByIndex(m_index);
     return (uint8_t)(m_cur_temp*4.0f);
+}
+
+/*
+ * NTC sensor
+ */
+
+NTCTemperaturePinState::NTCTemperaturePinState(uint8_t virtual_pin_index, uint8_t index, uint8_t k_resistance)
+        : PinState(index + A0, PIN_MODE_INPUT, PIN_TYPE_VIRTUAL) {
+    m_index_in_middleware = virtual_pin_index;
+    m_R1 = 1000.0f * (float)k_resistance;
+}
+
+void NTCTemperaturePinState::setOutput(uint8_t output) {
+}
+
+uint8_t NTCTemperaturePinState::readInput() {
+    const float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
+    int Vo = analogRead(m_index);
+    float R2 = m_R1 * (1023.0 / (float)Vo - 1.0);
+    float logR2 = log(R2);
+    float T = (1.0 / (c1 + c2*logR2 + c3*logR2*logR2*logR2));
+    float Tc = T - 273.15;
+    return (int)((float)(Tc * 4.0f));
 }
 
 /**
