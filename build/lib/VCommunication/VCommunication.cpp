@@ -198,6 +198,8 @@ void communication_send_command(uint8_t type, uint8_t len, char* cmd) {
 }
 
 void communication_init_logging(HardwareSerial* serial) {
+#ifdef ENABLE_LOGGING
     LoggingSerial = serial;
     LoggingSerial->begin(9600);
+#endif
 }

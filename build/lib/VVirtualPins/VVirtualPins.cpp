@@ -28,6 +28,11 @@ PinState* create_virtual_pin(uint8_t virtual_pin_index, uint8_t type, uint8_t da
                 return NULL;
             return new NTCTemperaturePinState(virtual_pin_index, data[0] & 0xFF, data[1] & 0xFF);
         }
+        case VIRTUAL_PIN_CURRENT_SENSOR: {
+            if (data_len != 1)
+                return NULL;
+            return new CurrentSensorPinState(virtual_pin_index, data[0] & 0xFF);
+        }
     }
 
     return NULL;

@@ -10,6 +10,7 @@
 #include <TimerOne.h>
 
 #include "Multiplexer.h"
+#include "EmonLib.h"
 
 #define ONE_WIRE_PIN 53
 
@@ -18,6 +19,7 @@
 #define VIRTUAL_PIN_ISR_LIGHT2              2
 #define VIRTUAL_PIN_MULTIPLEXED             3
 #define VIRTUAL_PIN_NTC_TEMP_SENSOR         4
+#define VIRTUAL_PIN_CURRENT_SENSOR          5
 
 #define MAX_ISR_LIGHTS 16
 
@@ -124,5 +126,19 @@ public:
 class ISRLights2PinState : public ISRLightsPinState {
 public:
     ISRLights2PinState(uint8_t frequency, uint8_t sync_port, uint8_t out_port);
+};
+
+/**
+ * Current sensor EmonLib
+ */
+class CurrentSensorPinState : public PinState {
+    EnergyMonitor m_emon;
+
+public:
+    CurrentSensorPinState(int virtual_pin_index, int readingPin);
+
+    virtual void setOutput(uint8_t output);
+
+    virtual uint8_t readInput();
 };
 

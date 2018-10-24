@@ -2,6 +2,9 @@
 
 Arduino controller code
 
+# Requirements
+To be able to use the mega2560_256 board, you need to create a new board in your boards.txt (in the Arduino library base) which is a copy of mega2560 except the name (now mega2560_256, duh) and `mega2560.build.core=arduino` becomes `mega2560_256.build.core=arduino_bigserial`. Then you need to copy `..../hardware/arduino/cores/arduino/` to `..../hardware/arduino/cores/arduino_bigserial/` and in the new directory edit `HardwareSerial.cpp` to change `#define SERIAL_BUFFER_SIZE 64` to `#define SERIAL_BUFFER_SIZE 256`.
+
 # Uploading the code to an Arduino
 Run `./upload.sh <board>` where board is any implemented board (such as "mega2560").
 
@@ -40,6 +43,8 @@ All communication happens by sending messages in the following format: `[code (1
     - 4: NTC temperature sensor. pin-specific info: `[analog_pin_index, k_resistance]`
         - analog_pin_index: Index of the analog pin (i.e. 0, 1, 2, ...15 on the mega) to read the sensor
         - k_resistance: resistance value used (in thousands). pass 100 for 100kohm, 20 for 20kohm, etc...
+    - 5: EmonLin current sensor: `[analog_pin_index]`
+        - analog_pin_index: Index of the analog pin (i.e. 0 for A0, 1 for A1, 2, ...15 for A15 on the mega) to read the sensor
 
 ### Code 3: Set pin output `[3][3][pin_type][pin_index][output]`
 - pin_type: 0 for digital pin, 1 for analog pin, 2 for virtual pin

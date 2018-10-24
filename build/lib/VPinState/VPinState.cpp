@@ -112,7 +112,7 @@ uint8_t AnalogPinState::readInput() {
 }
 
 void reset_board() {
-    /*for (uint8_t i = 0; i < num_digital_pins; i++) {
+    for (uint8_t i = 0; i < num_digital_pins; i++) {
         if (digital_pins[i]) {
             delete digital_pins[i];
             digital_pins[i] = NULL;
@@ -131,7 +131,7 @@ void reset_board() {
         }
     }
 
-    ISREngine::reset();*/
+    ISREngine::reset();
 }
 
 void init_pin_states(uint8_t num_digital, uint8_t num_analog, uint8_t num_virtual) {
